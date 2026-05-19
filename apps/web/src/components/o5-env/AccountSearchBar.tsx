@@ -52,20 +52,20 @@ export const AccountSearchBar = forwardRef<AccountSearchBarHandle, AccountSearch
             animate={{ opacity: 1, height: "auto", y: 0 }}
             exit={{ opacity: 0, height: 0, y: -8 }}
             transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-            className="shrink-0 overflow-hidden border-b bg-white"
+            className="border-border shrink-0 overflow-hidden border-b bg-astral-deep/40 backdrop-blur-sm"
           >
             <div className="px-4 py-2">
               <div
                 className={cn(
                   "group flex items-center gap-2 rounded-lg border transition-[background-color,border-color,box-shadow] duration-200",
-                  "bg-muted/45 border-transparent",
-                  "focus-within:border-border/70 focus-within:bg-white focus-within:shadow-sm",
+                  "border-violet-edge bg-midnight-gaze/80",
+                  "focus-within:border-starlight-violet/50 focus-within:bg-midnight-gaze focus-within:shadow-md",
                 )}
               >
                 <Search
                   className={cn(
-                    "text-muted-foreground ml-2.5 size-4 shrink-0 transition-colors",
-                    "group-focus-within:text-foreground",
+                    "text-lunar-dust ml-2.5 size-4 shrink-0 transition-colors",
+                    "group-focus-within:text-etherium-blue",
                   )}
                 />
                 <input
@@ -78,7 +78,7 @@ export const AccountSearchBar = forwardRef<AccountSearchBarHandle, AccountSearch
                   placeholder="搜索中文、拼音全拼、拼音首字母、英文、手机号…"
                   className={cn(
                     "h-9 min-w-0 flex-1 border-0 bg-transparent py-0 text-sm shadow-none outline-none",
-                    "placeholder:text-muted-foreground",
+                    "text-crystal-white placeholder:text-lunar-dust/70",
                     "focus:outline-none focus-visible:outline-none focus-visible:ring-0",
                   )}
                   aria-label="搜索账号，支持中文、拼音全拼、拼音首字母、英文、手机号"
@@ -86,7 +86,7 @@ export const AccountSearchBar = forwardRef<AccountSearchBarHandle, AccountSearch
                 <div className="flex shrink-0 items-center gap-1.5 pr-1.5">
                   {hasQuery ? (
                     <>
-                      <span className="text-muted-foreground text-xs tabular-nums whitespace-nowrap">
+                      <span className="text-lunar-dust text-xs tabular-nums whitespace-nowrap">
                         {matchCount} / {totalCount}
                       </span>
                       <Button
@@ -105,7 +105,7 @@ export const AccountSearchBar = forwardRef<AccountSearchBarHandle, AccountSearch
                       </Button>
                     </>
                   ) : (
-                    <kbd className="text-muted-foreground bg-muted hidden rounded px-1.5 py-0.5 font-mono sm:inline">
+                    <kbd className="text-lunar-dust bg-twilight-indigo/60 font-mono-ui hidden rounded-md px-1.5 py-0.5 sm:inline">
                       Esc
                     </kbd>
                   )}

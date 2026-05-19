@@ -20,7 +20,7 @@ export function AppRailItem({ to, label, icon: Icon }: AppRailItemProps) {
           className={cn(
             "size-10",
             isActive &&
-              "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground",
+              "bg-cosmic-violet text-crystal-white hover:bg-cosmic-violet/90 hover:text-crystal-white",
           )}
           aria-label={label}
           aria-current={isActive ? "page" : undefined}
