@@ -40,7 +40,7 @@ fi
 
 echo "==> Deploy dist -> Cloudflare Pages"
 DEPLOY_LOG="$(mktemp)"
-"${WRANGLER[@]}" pages deploy dist \
+"${WRANGLER[@]}" pages deploy apps/web/dist \
   --project-name="${CF_PAGES_PROJECT}" \
   --branch=main \
   --commit-dirty=true 2>&1 | tee "${DEPLOY_LOG}"
