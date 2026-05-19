@@ -20,13 +20,8 @@ export function FavoritesSection({
   if (accounts.length === 0) return null;
 
   return (
-    <section
-      className="border-border shrink-0 border-b bg-astral-deep/30 px-4 py-2 backdrop-blur-sm"
-      aria-label="常用账号"
-    >
-      <p className="text-lunar-dust mb-2 text-xs font-medium tracking-wide uppercase">
-        常用 ({accounts.length})
-      </p>
+    <section className="shrink-0 border-b bg-white px-4 py-2" aria-label="常用账号">
+      <p className="text-muted-foreground mb-2 text-xs font-medium">常用 ({accounts.length})</p>
       <div className="flex flex-wrap gap-2">
         {accounts.map((account) => (
           <FavoriteChip
@@ -61,20 +56,20 @@ function FavoriteChip({
   return (
     <div
       className={cn(
-        "border-violet-edge bg-midnight-gaze inline-flex items-center gap-1 rounded-full border px-2 py-1 text-sm shadow-md",
-        isActive && "border-starlight-violet ring-starlight-violet/40 ring-2",
+        "bg-card inline-flex items-center gap-1 rounded-md border px-2 py-1 text-sm shadow-xs",
+        isActive && "border-primary ring-primary/30 ring-2",
       )}
       data-account-id={account.id}
     >
       <button
         type="button"
-        className="text-lunar-dust hover:text-crystal-white flex items-center gap-1 rounded-full px-1 py-0.5 transition-colors"
+        className="hover:bg-muted/60 flex items-center gap-1 rounded px-1 py-0.5 transition-colors"
         onClick={() => void handleCopy()}
       >
         {copied ? (
           <>
-            <Check className="text-etherium-blue size-3.5" />
-            <span className="text-etherium-blue text-xs">已复制</span>
+            <Check className="text-primary size-3.5" />
+            <span className="text-primary text-xs">已复制</span>
           </>
         ) : (
           <span>
@@ -86,7 +81,7 @@ function FavoriteChip({
         type="button"
         variant="ghost"
         size="sm"
-        className="text-starlight-violet h-6 w-6 rounded-full p-0"
+        className="text-primary h-6 w-6 p-0"
         aria-label={`取消收藏 ${account.name}`}
         aria-pressed
         onClick={() => onToggleFavorite(account.id)}

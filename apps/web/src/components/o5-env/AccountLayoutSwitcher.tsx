@@ -23,7 +23,7 @@ type AccountLayoutSwitcherProps = {
 export function AccountLayoutSwitcher({ layout, onChange }: AccountLayoutSwitcherProps) {
   return (
     <div
-      className="border-violet-edge bg-astral-deep inline-flex items-center gap-0.5 rounded-lg border p-0.5"
+      className="bg-muted/40 inline-flex items-center gap-0.5 rounded-md border p-0.5"
       role="group"
       aria-label="账号列表布局"
     >
@@ -36,10 +36,10 @@ export function AccountLayoutSwitcher({ layout, onChange }: AccountLayoutSwitche
             variant="ghost"
             size="sm"
             className={cn(
-              "h-7 gap-1 rounded-md px-2 transition-colors",
+              "h-7 gap-1 px-2 transition-colors",
               selected
-                ? "bg-cosmic-violet text-crystal-white hover:bg-cosmic-violet/90 hover:text-crystal-white"
-                : "text-lunar-dust hover:bg-twilight-indigo/60 hover:text-crystal-white",
+                ? "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground"
+                : "text-muted-foreground hover:bg-accent hover:text-foreground",
             )}
             aria-pressed={selected}
             aria-label={label}

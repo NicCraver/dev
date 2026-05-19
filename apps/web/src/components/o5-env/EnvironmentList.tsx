@@ -13,11 +13,11 @@ type EnvironmentListProps = {
 
 export function EnvironmentList({ environments, selectedId, onSelect }: EnvironmentListProps) {
   return (
-    <section className="border-border flex h-full min-h-0 flex-col overflow-hidden border-t">
+    <section className="border-border flex h-full min-h-0 flex-col overflow-hidden border-t bg-white">
       <div className="flex shrink-0 items-center justify-between px-3 py-2">
         <h2
           id="o5-env-list-heading"
-          className="text-lunar-dust text-xs font-medium tracking-wide uppercase"
+          className="text-muted-foreground text-xs font-medium tracking-wide"
         >
           环境列表
         </h2>
@@ -25,7 +25,7 @@ export function EnvironmentList({ environments, selectedId, onSelect }: Environm
           <Button
             variant="ghost"
             size="icon"
-            className="text-lunar-dust hover:text-crystal-white size-7 rounded-full"
+            className="size-7"
             title="同步（即将推出）"
             aria-label="同步（即将推出）"
             disabled
@@ -35,7 +35,7 @@ export function EnvironmentList({ environments, selectedId, onSelect }: Environm
           <Button
             variant="ghost"
             size="icon"
-            className="text-lunar-dust hover:text-crystal-white size-7 rounded-full"
+            className="size-7"
             title="添加用户（即将推出）"
             aria-label="添加用户（即将推出）"
             disabled
@@ -51,7 +51,7 @@ export function EnvironmentList({ environments, selectedId, onSelect }: Environm
       >
         <ul className="flex flex-col gap-0.5 px-1 pb-2">
           {environments.length === 0 ? (
-            <li className="text-lunar-dust px-3 py-4 text-center text-sm">暂无环境</li>
+            <li className="text-muted-foreground px-3 py-4 text-center text-sm">暂无环境</li>
           ) : (
             environments.map((env) => (
               <li key={env.id}>

@@ -25,11 +25,10 @@ export function SidebarNavItem({
       onClick={onClick}
       aria-selected={selected}
       className={cn(
-        "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-[background-color,box-shadow,color] duration-200 outline-none",
-        "focus-visible:ring-2 focus-visible:ring-starlight-violet/50",
+        "flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm transition-colors outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
         selected
-          ? "bg-cosmic-violet text-crystal-white shadow-md hover:bg-cosmic-violet/90"
-          : "text-lunar-dust hover:bg-twilight-indigo/60 hover:text-crystal-white",
+          ? "bg-primary text-primary-foreground hover:bg-primary/90"
+          : "text-foreground hover:bg-accent",
         trailing ? "justify-between" : "justify-start",
         className,
       )}

@@ -25,7 +25,7 @@ export function HighlightText({
   return (
     <span className={className}>
       {text.slice(0, index)}
-      <mark className="rounded-sm bg-etherium-blue/25 px-0.5 text-etherium-blue">
+      <mark className="bg-primary/20 rounded-sm px-0.5">
         {text.slice(index, index + trimmed.length)}
       </mark>
       {text.slice(index + trimmed.length)}
@@ -35,7 +35,7 @@ export function HighlightText({
 
 export function accountCardClassName(isActive: boolean) {
   return cn(
-    "bg-midnight-gaze hover:border-starlight-violet/30 rounded-xl border border-violet-edge px-4 py-3 shadow-card transition-[border-color,box-shadow] duration-200 hover:shadow-card-hover",
-    isActive && "border-starlight-violet ring-starlight-violet/40 ring-2",
+    "bg-card hover:border-border/80 rounded-lg border px-4 py-3 shadow-xs transition-colors hover:shadow-sm",
+    isActive && "border-primary ring-primary/30 ring-2",
   );
 }

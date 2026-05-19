@@ -12,8 +12,8 @@ type SystemListProps = {
 
 export function SystemList({ systems, selectedId, onSelect }: SystemListProps) {
   return (
-    <section className="flex h-full min-h-0 flex-col overflow-hidden">
-      <h2 className="text-lunar-dust shrink-0 px-3 py-2 text-xs font-medium tracking-wide uppercase">
+    <section className="flex h-full min-h-0 flex-col overflow-hidden bg-white">
+      <h2 className="text-muted-foreground shrink-0 px-3 py-2 text-xs font-medium tracking-wide">
         系统列表
       </h2>
       <ul className="scrollbar-thin flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto overscroll-y-contain px-1 pb-2">
@@ -29,10 +29,9 @@ export function SystemList({ systems, selectedId, onSelect }: SystemListProps) {
                   <Badge
                     variant={isSelected ? "secondary" : "outline"}
                     className={cn(
-                      "tabular-nums rounded-full",
+                      "tabular-nums",
                       isSelected &&
-                        "border-crystal-white/20 bg-crystal-white/15 text-crystal-white",
-                      !isSelected && "border-lunar-dust/40 text-lunar-dust",
+                        "border-primary-foreground/20 bg-primary-foreground/15 text-primary-foreground",
                     )}
                   >
                     {system.count}
