@@ -137,8 +137,8 @@ export function AccountCardList({ accounts, environmentName }: AccountCardListPr
 
   if (!environmentName) {
     return (
-      <div className="text-muted-foreground flex h-full min-h-0 flex-col items-center justify-center gap-2 text-sm">
-        <Users className="text-muted-foreground/50 size-10" strokeWidth={1.25} />
+      <div className="text-lunar-dust flex h-full min-h-0 flex-col items-center justify-center gap-2 text-sm">
+        <Users className="text-lunar-dust/40 size-10" strokeWidth={1.25} />
         <p>请选择一个环境</p>
       </div>
     );
@@ -153,7 +153,7 @@ export function AccountCardList({ accounts, environmentName }: AccountCardListPr
           layout={layout}
           onLayoutChange={setLayout}
         />
-        <div className="text-muted-foreground flex min-h-0 flex-1 flex-col items-center justify-center gap-1 text-sm">
+        <div className="text-lunar-dust flex min-h-0 flex-1 flex-col items-center justify-center gap-1 text-sm">
           <p>该环境下暂无账号</p>
         </div>
       </div>
@@ -203,7 +203,7 @@ export function AccountCardList({ accounts, environmentName }: AccountCardListPr
         aria-label="账号列表"
       >
         {filteredAccounts.length === 0 ? (
-          <div className="text-muted-foreground flex flex-col items-center justify-center gap-2 p-8 text-sm">
+          <div className="text-lunar-dust flex flex-col items-center justify-center gap-2 p-8 text-sm">
             <p>未找到匹配账号</p>
             <Button variant="outline" size="sm" onClick={() => setSearchQuery("")}>
               清空搜索
@@ -247,20 +247,22 @@ function AccountListHeader({
   onOpenSearch?: () => void;
 }) {
   return (
-    <header className="flex shrink-0 items-start justify-between gap-3 border-b bg-white px-4 py-3">
+    <header className="border-border flex shrink-0 items-start justify-between gap-3 border-b bg-astral-deep/50 px-4 py-3 backdrop-blur-sm">
       <div className="min-w-0">
-        <h1 className="truncate text-lg font-semibold tracking-tight">{environmentName}</h1>
-        <p className="text-muted-foreground mt-0.5 text-sm">
+        <h1 className="font-display truncate text-xl font-semibold tracking-tight text-crystal-white">
+          {environmentName}
+        </h1>
+        <p className="text-lunar-dust mt-0.5 text-sm">
           {count > 0 ? `${count} 个账号` : "暂无账号"}
           {!searchOpen && onOpenSearch && count > 0 && (
             <>
               {" · "}
               <button
                 type="button"
-                className="hover:text-foreground underline-offset-2 transition-colors hover:underline"
+                className="hover:text-etherium-blue underline-offset-2 transition-colors hover:underline"
                 onClick={onOpenSearch}
               >
-                <kbd className="font-mono">⌘F</kbd> 搜索
+                <kbd className="font-mono-ui text-etherium-blue">⌘F</kbd> 搜索
               </button>
             </>
           )}

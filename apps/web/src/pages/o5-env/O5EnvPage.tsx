@@ -46,7 +46,7 @@ export function O5EnvPage() {
   };
 
   return (
-    <div className="flex h-full min-h-0 flex-1 overflow-hidden bg-white">
+    <div className="nebula-canvas flex h-full min-h-0 flex-1 overflow-hidden">
       <ResizablePanelGroup
         id="o5-env-main"
         className="h-full"
@@ -58,7 +58,7 @@ export function O5EnvPage() {
           defaultSize="22%"
           minSize="14%"
           maxSize="42%"
-          className="border-border bg-white text-foreground border-r"
+          className="border-border bg-midnight-gaze/95 text-foreground border-r backdrop-blur-sm"
         >
           <ResizablePanelGroup
             id="o5-env-sidebar"
@@ -93,7 +93,11 @@ export function O5EnvPage() {
 
         <ResizableHandle withHandle variant="vertical" />
 
-        <ResizablePanel id="accounts" minSize="35%" className="flex flex-col bg-white">
+        <ResizablePanel
+          id="accounts"
+          minSize="35%"
+          className="bg-background/80 flex flex-col backdrop-blur-sm"
+        >
           <AccountCardList
             accounts={accountsForEnv}
             environmentName={selectedEnvironment?.name ?? null}
