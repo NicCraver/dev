@@ -15,8 +15,8 @@ fi
 : "${CLOUDFLARE_ACCOUNT_ID:?Set CLOUDFLARE_ACCOUNT_ID in .env.deploy}"
 : "${CF_ROOT_DOMAIN:?Set CF_ROOT_DOMAIN in .env.deploy (e.g. example.com)}"
 
-CF_SUBDOMAIN="${CF_SUBDOMAIN:-mt-tools}"
-CF_PAGES_PROJECT="${CF_PAGES_PROJECT:-mt-tools}"
+CF_SUBDOMAIN="${CF_SUBDOMAIN:-mt-dev}"
+CF_PAGES_PROJECT="${CF_PAGES_PROJECT:-mt-dev}"
 # Strip https:// and trailing slashes from common misconfiguration
 CF_ROOT_DOMAIN="${CF_ROOT_DOMAIN#https://}"
 CF_ROOT_DOMAIN="${CF_ROOT_DOMAIN#http://}"
