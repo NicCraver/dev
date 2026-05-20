@@ -1,7 +1,8 @@
 import type { DevDashModuleId } from "@mt-dev/shared";
-import { Bot, Mail, Users, type LucideIcon } from "lucide-react";
+import { Mail01Icon, RobotIcon, UserGroupIcon } from "@hugeicons/core-free-icons";
 import { createElement, type ComponentType } from "react";
 
+import type { IconSvgElement } from "@/components/ui/icon";
 import { ComingSoon } from "@/pages/ComingSoon";
 import { O5EnvPage } from "@/pages/o5-env/O5EnvPage";
 
@@ -10,7 +11,7 @@ export type DevDashModule = {
   label: string;
   routePath: string;
   navPath: string;
-  icon: LucideIcon;
+  icon: IconSvgElement;
   page: ComponentType;
 };
 
@@ -20,7 +21,7 @@ export const modules: DevDashModule[] = [
     label: "O5 env",
     routePath: "o5-env",
     navPath: "/o5-env",
-    icon: Users,
+    icon: UserGroupIcon,
     page: O5EnvPage,
   },
   {
@@ -28,7 +29,7 @@ export const modules: DevDashModule[] = [
     label: "智邮 env",
     routePath: "zhiyou-env",
     navPath: "/zhiyou-env",
-    icon: Mail,
+    icon: Mail01Icon,
     page: () => createElement(ComingSoon, { title: "智邮 env" }),
   },
   {
@@ -36,7 +37,7 @@ export const modules: DevDashModule[] = [
     label: "aichat env",
     routePath: "aichat-env",
     navPath: "/aichat-env",
-    icon: Bot,
+    icon: RobotIcon,
     page: () => createElement(ComingSoon, { title: "aichat env" }),
   },
 ];
