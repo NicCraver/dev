@@ -159,14 +159,13 @@ export function useO5EnvData() {
 
   const cache = useMemo(() => readCache(), [systems]);
 
-  const persistSelection = useCallback((systemName: string, envName: string) => {
+  const persistSelection = useCallback((systemName: string, envName?: string) => {
     const current = readCache();
     writeCache({
       lastActiveSystem: systemName,
-      systems: {
-        ...current.systems,
-        [systemName]: { lastActiveUrl: envName },
-      },
+      systems: envName
+        ? { ...current.systems, [systemName]: { lastActiveUrl: envName } }
+        : current.systems,
     });
   }, []);
 

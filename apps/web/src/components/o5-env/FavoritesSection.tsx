@@ -9,6 +9,8 @@ import { favoriteChipClasses, favoriteChipIconClasses } from "@/lib/interaction"
 import { accountOrgLabel, accountPhone, type O5Account } from "@/types/o5-env";
 import { cn } from "@/lib/utils";
 
+import { SortableFavoritesRow, type FavoriteSortableProps } from "./SortableFavoritesRow";
+
 type FavoritesSectionProps = {
   accounts: O5Account[];
   activeAccountId?: string;
@@ -16,6 +18,7 @@ type FavoritesSectionProps = {
   jumpEnabled?: boolean;
   targetUrl?: string | null;
   windowFeatures?: string;
+  sortable?: boolean;
   onToggleFavorite: (accountId: string) => void;
 };
 
@@ -26,6 +29,7 @@ export function FavoritesSection({
   jumpEnabled = false,
   targetUrl = null,
   windowFeatures,
+  sortable = true,
   onToggleFavorite,
 }: FavoritesSectionProps) {
   if (accounts.length === 0) return null;
@@ -35,35 +39,48 @@ export function FavoritesSection({
       className="shrink-0 border-b border-neutral-200/40 bg-slate-50/20 backdrop-blur-md px-4 py-3 z-10"
       aria-label="常用账号"
     >
-      <p className="flex items-center gap-1.5 text-xs font-bold tracking-wider text-amber-600/90 uppercase mb-2.5">
-        <Icon icon={StarIcon} className="size-4 text-amber-500 fill-amber-400 animate-pulse" />
-        常用账号 ({accounts.length})
+      <p className="mb-2.5 flex min-w-0 items-center gap-1.5 text-xs font-bold tracking-wider text-amber-600/90 uppercase">
+        <Icon
+          icon={StarIcon}
+          className="size-4 shrink-0 text-amber-500 fill-amber-400 animate-pulse"
+        />
+        <span className="min-w-0 truncate">
+          常用账号 ({accounts.length})
+          {sortable && (
+            <span className="font-normal normal-case tracking-normal text-slate-400/90">
+              {" "}
+              · 按住拖动排序
+            </span>
+          )}
+        </span>
       </p>
-      <div className="flex flex-wrap gap-2">
-        {accounts.map((account) => (
+      <SortableFavoritesRow
+        accounts={accounts}
+        renderChip={(account, sortable) => (
           <FavoriteChip
-            key={account.id}
             account={account}
             isActive={account.id === activeAccountId}
             showCompany={showCompany}
             jumpEnabled={jumpEnabled}
             targetUrl={targetUrl}
             windowFeatures={windowFeatures}
+            sortable={sortable}
             onToggleFavorite={onToggleFavorite}
           />
-        ))}
-      </div>
+        )}
+      />
     </section>
   );
 }
 
-function FavoriteChip({
+export function FavoriteChip({
   account,
   isActive,
   showCompany,
   jumpEnabled,
   targetUrl,
   windowFeatures,
+  sortable,
   onToggleFavorite,
 }: {
   account: O5Account;
@@ -72,13 +89,14 @@ function FavoriteChip({
   jumpEnabled: boolean;
   targetUrl: string | null;
   windowFeatures?: string;
+  sortable: FavoriteSortableProps | null;
   onToggleFavorite: (accountId: string) => void;
 }) {
   const [copied, setCopied] = useState(false);
   const defaultCorp = account.corpList[0];
 
   const handleOpen = (event: MouseEvent | KeyboardEvent) => {
-    if (!jumpEnabled || !defaultCorp) return;
+    if (sortable?.isDragging || !jumpEnabled || !defaultCorp) return;
     const ctrlKey = "ctrlKey" in event && (event.ctrlKey || event.metaKey);
     void openAccountJump({
       username: account.username,
@@ -111,15 +129,31 @@ function FavoriteChip({
 
   return (
     <div
-      className={favoriteChipClasses(isActive)}
+      ref={sortable?.setNodeRef}
+      style={sortable?.style}
+      {...sortable?.attributes}
+      {...sortable?.listeners}
+      className={cn(
+        favoriteChipClasses(isActive),
+        sortable && "touch-none select-none cursor-grab active:cursor-grabbing",
+        sortable?.isDragging && "opacity-35 shadow-lg ring-2 ring-amber-400/40",
+      )}
       data-account-id={account.id}
       role="button"
       tabIndex={0}
       aria-label={`打开 ${account.name} 的登录页`}
+      title={sortable ? "按住拖动排序" : undefined}
       onClick={(event) => jumpEnabled && handleOpen(event)}
       onKeyDown={handleKeyDown}
     >
-      <span className="min-w-0 flex-1 truncate px-2.5 py-1.5 font-semibold">
+      <span
+        className="min-w-0 flex-1 truncate px-2.5 py-1.5 font-semibold"
+        title={
+          showCompany && defaultCorp
+            ? `${account.name} · ${accountOrgLabel(account)}`
+            : account.name
+        }
+      >
         {account.name}
         {showCompany && defaultCorp && (
           <span className="text-slate-400/80 font-normal"> · {accountOrgLabel(account)}</span>

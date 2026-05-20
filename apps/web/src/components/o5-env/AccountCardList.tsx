@@ -1,15 +1,16 @@
-import { UserAdd01Icon, UserGroupIcon } from "@hugeicons/core-free-icons";
+import { Search01Icon, UserAdd01Icon, UserGroupIcon } from "@hugeicons/core-free-icons";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { accountPhone, type O5Account } from "@/types/o5-env";
 import { filterAccounts } from "@/lib/account-search";
-import { textLinkClasses, shortcutKbdClasses } from "@/lib/interaction";
+import { iconGhostClasses } from "@/lib/interaction";
 import { useModShortcut } from "@/lib/keyboard-shortcut";
 import { copyPhone } from "@/lib/copy-phone";
 import { useGridColumns } from "@/hooks/useGridColumns";
 import { resolveGridColumns, useO5GridLayout, type O5GridLayout } from "@/hooks/useO5GridLayout";
+import { useO5AccountOrder } from "@/hooks/useO5AccountOrder";
 import { useO5Favorites } from "@/hooks/useO5Favorites";
 import { useO5ShowCompany } from "@/hooks/useO5ShowCompany";
 import { cn } from "@/lib/utils";
@@ -19,7 +20,9 @@ import { AccountLayoutSwitcher } from "./AccountLayoutSwitcher";
 import { AccountShowCompanyToggle } from "./AccountShowCompanyToggle";
 import { AccountSearchBar, type AccountSearchBarHandle } from "./AccountSearchBar";
 import { AddUserDialog } from "./AddUserDialog";
-import { FavoritesSection } from "./FavoritesSection";
+import { AccountPanelSortable } from "./AccountPanelSortable";
+import { FavoritesSection, FavoriteChip } from "./FavoritesSection";
+import { SortableAccountGrid } from "./SortableAccountGrid";
 
 type AccountCardListProps = {
   accounts: O5Account[];
@@ -41,7 +44,8 @@ export function AccountCardList({
   onRefetch,
 }: AccountCardListProps) {
   const jumpEnabled = Boolean(targetUrl?.trim());
-  const { isFavorite, toggleFavorite } = useO5Favorites();
+  const { favorites, isFavorite, toggleFavorite, reorderFavorites } = useO5Favorites();
+  const { sortAccounts, reorderAccounts } = useO5AccountOrder(systemKvId);
   const { layout, setLayout } = useO5GridLayout();
   const { showCompany, setShowCompany } = useO5ShowCompany();
   const [searchQuery, setSearchQuery] = useState("");
@@ -54,15 +58,19 @@ export function AccountCardList({
   const autoColumns = useGridColumns(gridNode);
   const columns = resolveGridColumns(layout, autoColumns);
 
+  const orderedAccounts = useMemo(() => sortAccounts(accounts), [accounts, sortAccounts]);
+
   const filteredAccounts = useMemo(
-    () => filterAccounts(accounts, searchQuery),
-    [accounts, searchQuery],
+    () => filterAccounts(orderedAccounts, searchQuery),
+    [orderedAccounts, searchQuery],
   );
 
-  const favoriteAccounts = useMemo(
-    () => filteredAccounts.filter((account) => isFavorite(account.id)),
-    [filteredAccounts, isFavorite],
-  );
+  const favoriteAccounts = useMemo(() => {
+    const byId = new Map(filteredAccounts.map((account) => [account.id, account]));
+    return favorites
+      .map((id) => byId.get(id))
+      .filter((account): account is O5Account => account != null);
+  }, [filteredAccounts, favorites]);
 
   const gridAccounts = useMemo(
     () => filteredAccounts.filter((account) => !isFavorite(account.id)),
@@ -211,6 +219,7 @@ export function AccountCardList({
   }
 
   const activeAccountId = activeIndex >= 0 ? navigableAccounts[activeIndex]?.id : undefined;
+  const dragEnabled = !searchQuery.trim();
 
   return (
     <div className="flex h-full min-h-0 flex-col overflow-hidden" data-account-panel>
@@ -245,61 +254,110 @@ export function AccountCardList({
         totalCount={accounts.length}
         onKeyDown={handleSearchKeyDown}
       />
-      <FavoritesSection
-        accounts={favoriteAccounts}
-        activeAccountId={activeAccountId}
-        showCompany={showCompany}
-        jumpEnabled={jumpEnabled}
-        targetUrl={targetUrl}
-        windowFeatures={windowFeatures}
-        onToggleFavorite={toggleFavorite}
-      />
-      <div
-        ref={setGridNode}
-        className="scrollbar-thin min-h-0 flex-1 overflow-y-auto overscroll-y-contain"
-        role="region"
-        aria-label="账号列表"
-      >
-        {filteredAccounts.length === 0 ? (
-          <div className="flex flex-col items-center justify-center p-12 text-center bg-transparent">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 dark:bg-neutral-800/40 text-slate-400 dark:text-zinc-500 mb-4 border border-slate-200/50 dark:border-zinc-800">
-              <Icon icon={UserGroupIcon} className="size-5 text-slate-400" strokeWidth={1.5} />
-            </div>
-            <h3 className="text-sm font-bold text-slate-700 dark:text-zinc-300">未找到匹配账号</h3>
-            <p className="text-xs text-slate-400 mt-1 max-w-[240px] leading-relaxed mb-4">
-              试着搜索其他关键词，或者点击下方按钮快速清空当前搜索词。
-            </p>
-            <Button
-              variant="outline"
-              size="sm"
-              className="rounded-lg font-medium text-xs shadow-2xs hover:bg-slate-50 transition-all active:scale-95 px-3 py-1.5"
-              onClick={() => setSearchQuery("")}
-            >
-              清空搜索
-            </Button>
-          </div>
-        ) : (
-          <div
-            className="grid gap-3 p-4"
-            style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
-          >
-            {gridAccounts.map((account) => (
-              <AccountCard
-                key={account.id}
-                account={account}
-                isFavorite={isFavorite(account.id)}
-                isActive={account.id === activeAccountId}
-                searchQuery={searchQuery}
-                showCompany={showCompany}
-                jumpEnabled={jumpEnabled}
-                targetUrl={targetUrl}
-                windowFeatures={windowFeatures}
-                onToggleFavorite={toggleFavorite}
-              />
-            ))}
-          </div>
+      <AccountPanelSortable
+        dragEnabled={dragEnabled}
+        favoriteAccounts={favoriteAccounts}
+        gridAccounts={gridAccounts}
+        onReorderFavorites={(activeId, overId) =>
+          reorderFavorites(
+            activeId,
+            overId,
+            favoriteAccounts.map((account) => account.id),
+          )
+        }
+        onReorderGrid={(activeId, overId) =>
+          reorderAccounts(
+            orderedAccounts,
+            orderedAccounts.filter((account) => !isFavorite(account.id)),
+            activeId,
+            overId,
+          )
+        }
+        renderFavoriteOverlay={(account) => (
+          <FavoriteChip
+            account={account}
+            isActive={account.id === activeAccountId}
+            showCompany={showCompany}
+            jumpEnabled={jumpEnabled}
+            targetUrl={targetUrl}
+            windowFeatures={windowFeatures}
+            sortable={null}
+            onToggleFavorite={toggleFavorite}
+          />
         )}
-      </div>
+        renderGridOverlay={(account) => (
+          <AccountCard
+            account={account}
+            isFavorite={isFavorite(account.id)}
+            isActive={account.id === activeAccountId}
+            searchQuery={searchQuery}
+            showCompany={showCompany}
+            jumpEnabled={jumpEnabled}
+            targetUrl={targetUrl}
+            windowFeatures={windowFeatures}
+            isDragging
+            onToggleFavorite={toggleFavorite}
+          />
+        )}
+      >
+        <FavoritesSection
+          accounts={favoriteAccounts}
+          activeAccountId={activeAccountId}
+          showCompany={showCompany}
+          jumpEnabled={jumpEnabled}
+          targetUrl={targetUrl}
+          windowFeatures={windowFeatures}
+          sortable={dragEnabled}
+          onToggleFavorite={toggleFavorite}
+        />
+        <div
+          ref={setGridNode}
+          className="scrollbar-thin min-h-0 flex-1 overflow-y-auto overscroll-y-contain"
+          role="region"
+          aria-label="账号列表"
+        >
+          {filteredAccounts.length === 0 ? (
+            <div className="flex flex-col items-center justify-center p-12 text-center bg-transparent">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 dark:bg-neutral-800/40 text-slate-400 dark:text-zinc-500 mb-4 border border-slate-200/50 dark:border-zinc-800">
+                <Icon icon={UserGroupIcon} className="size-5 text-slate-400" strokeWidth={1.5} />
+              </div>
+              <h3 className="text-sm font-bold text-slate-700 dark:text-zinc-300">
+                未找到匹配账号
+              </h3>
+              <p className="text-xs text-slate-400 mt-1 max-w-[240px] leading-relaxed mb-4">
+                试着搜索其他关键词，或者点击下方按钮快速清空当前搜索词。
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-lg font-medium text-xs shadow-2xs hover:bg-slate-50 transition-all active:scale-95 px-3 py-1.5"
+                onClick={() => setSearchQuery("")}
+              >
+                清空搜索
+              </Button>
+            </div>
+          ) : (
+            <SortableAccountGrid
+              accounts={gridAccounts}
+              columns={columns}
+              renderCard={(account, { isDragging }) => (
+                <AccountCard
+                  account={account}
+                  isFavorite={isFavorite(account.id)}
+                  isActive={account.id === activeAccountId}
+                  searchQuery={searchQuery}
+                  showCompany={showCompany}
+                  jumpEnabled={jumpEnabled}
+                  targetUrl={targetUrl}
+                  windowFeatures={windowFeatures}
+                  isDragging={isDragging}
+                  onToggleFavorite={toggleFavorite}
+                />
+              )}
+            />
+          )}
+        </div>
+      </AccountPanelSortable>
       {systemKvId && (
         <AddUserDialog
           open={addUserOpen}
@@ -336,41 +394,59 @@ function AccountListHeader({
   onAddUser?: () => void;
 }) {
   const searchShortcut = useModShortcut("f");
+  const metaText =
+    count > 0 ? (
+      <>
+        共 <span className="text-primary font-bold tabular-nums">{count}</span> 个账号
+      </>
+    ) : (
+      "暂无登记账号"
+    );
 
   return (
-    <header className="flex shrink-0 items-center justify-between gap-3 border-b border-neutral-200/40 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md px-6 py-3.5 z-20">
-      <div className="min-w-0">
-        <h1 className="truncate text-lg font-bold tracking-tight text-slate-800 dark:text-zinc-100">
+    <header className="z-20 flex shrink-0 flex-col gap-1 border-b border-neutral-200/40 bg-white/80 px-4 py-3 backdrop-blur-md sm:px-6 dark:bg-zinc-950/80">
+      <div className="flex min-w-0 items-center gap-2">
+        <h1
+          className="min-w-0 flex-1 truncate text-lg font-bold tracking-tight text-slate-800 dark:text-zinc-100"
+          title={environmentName}
+        >
           {environmentName}
         </h1>
-        <p className="text-muted-foreground mt-0.5 text-xs font-medium">
-          {count > 0 ? (
-            <>
-              共 <span className="text-primary font-bold tabular-nums">{count}</span> 个测试账号
-            </>
-          ) : (
-            "暂无登记账号"
-          )}
-          {!searchOpen && onOpenSearch && count > 0 && (
-            <>
-              {" · "}
-              <button type="button" className={textLinkClasses()} onClick={onOpenSearch}>
-                <kbd className={shortcutKbdClasses}>{searchShortcut}</kbd> 搜索
-              </button>
-            </>
-          )}
-        </p>
+        <div className="flex shrink-0 items-center gap-1">
+          <AccountShowCompanyToggle showCompany={showCompany} onChange={onShowCompanyChange} />
+          <AccountLayoutSwitcher layout={layout} onChange={onLayoutChange} />
+        </div>
       </div>
-      <div className="flex shrink-0 items-center gap-3">
+      <div className="flex min-w-0 items-center gap-1.5 overflow-hidden">
+        <span className="text-muted-foreground min-w-0 truncate text-xs font-medium">
+          {metaText}
+        </span>
+        {!searchOpen && onOpenSearch && count > 0 && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className={cn(
+              "h-6 w-6 shrink-0 p-0",
+              iconGhostClasses("neutral"),
+              "hover:!bg-primary-subtle hover:!text-foreground",
+            )}
+            title={`搜索 (${searchShortcut})`}
+            aria-label={`搜索 (${searchShortcut})`}
+            onClick={onOpenSearch}
+          >
+            <Icon icon={Search01Icon} className="size-3.5" strokeWidth={1.75} />
+          </Button>
+        )}
         {onAddUser && (
           <Button
             type="button"
             variant="ghost"
             size="sm"
             className={cn(
-              "h-7 gap-1.5 px-2.5 text-xs font-medium",
+              "h-6 w-6 shrink-0 p-0",
               canWrite
-                ? "text-muted-foreground hover:!bg-primary-subtle hover:!text-foreground"
+                ? cn(iconGhostClasses("neutral"), "hover:!bg-primary-subtle hover:!text-foreground")
                 : "text-muted-foreground opacity-40",
             )}
             title={canWrite ? "添加账号" : "需连接 MongoDB 且选中系统"}
@@ -378,12 +454,9 @@ function AccountListHeader({
             disabled={!canWrite}
             onClick={onAddUser}
           >
-            <Icon icon={UserAdd01Icon} className="size-3.5 shrink-0" strokeWidth={1.75} />
-            <span className="hidden sm:inline">添加账号</span>
+            <Icon icon={UserAdd01Icon} className="size-3.5" strokeWidth={1.75} />
           </Button>
         )}
-        <AccountShowCompanyToggle showCompany={showCompany} onChange={onShowCompanyChange} />
-        <AccountLayoutSwitcher layout={layout} onChange={onLayoutChange} />
       </div>
     </header>
   );

@@ -20,6 +20,7 @@ type AccountCardProps = {
   jumpEnabled?: boolean;
   targetUrl?: string | null;
   windowFeatures?: string;
+  isDragging?: boolean;
   onToggleFavorite: (accountId: string) => void;
 };
 
@@ -32,6 +33,7 @@ export function AccountCard({
   jumpEnabled = false,
   targetUrl = null,
   windowFeatures,
+  isDragging = false,
   onToggleFavorite,
 }: AccountCardProps) {
   const [copied, setCopied] = useState(false);
@@ -68,7 +70,8 @@ export function AccountCard({
       className={cn(
         accountCardClassName(isActive),
         isActive ? "pl-[23px] pr-5" : "px-5",
-        isBlockJump && "cursor-pointer",
+        isBlockJump && !isDragging && "cursor-pointer",
+        isDragging && "shadow-lg ring-2 ring-primary/20",
       )}
       data-account-id={account.id}
       onClick={handleBlockClick}
@@ -78,7 +81,10 @@ export function AccountCard({
       )}
 
       <div className="flex items-start justify-between gap-2">
-        <p className="min-w-0 flex-1 text-base font-semibold tracking-tight text-slate-800 dark:text-zinc-200 mt-0.5">
+        <p
+          className="mt-0.5 min-w-0 flex-1 truncate text-base font-semibold tracking-tight text-slate-800 dark:text-zinc-200"
+          title={account.name}
+        >
           <HighlightText text={account.name} query={searchQuery} />
         </p>
         <div className="flex shrink-0 items-center gap-1">

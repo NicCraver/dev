@@ -7,6 +7,8 @@ import { SystemList } from "@/components/o5-env/SystemList";
 import { Button } from "@/components/ui/button";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { useO5EnvData } from "@/hooks/useO5EnvData";
+import { useO5EnvironmentOrder } from "@/hooks/useO5EnvironmentOrder";
+import { useO5SystemOrder } from "@/hooks/useO5SystemOrder";
 
 export function O5EnvPage() {
   const {
@@ -25,6 +27,8 @@ export function O5EnvPage() {
 
   const [selectedSystemId, setSelectedSystemId] = useState<string | null>(null);
   const [selectedEnvId, setSelectedEnvId] = useState<string | null>(null);
+  const { sortSystems, reorderSystems } = useO5SystemOrder();
+  const { sortEnvironments, reorderEnvironments } = useO5EnvironmentOrder(selectedSystemId);
 
   const mainLayout = useDefaultLayout({
     id: "o5-env-main",
@@ -36,29 +40,43 @@ export function O5EnvPage() {
     panelIds: ["systems", "environments"],
   });
 
+  const orderedSystems = useMemo(() => sortSystems(systems), [systems, sortSystems]);
+
   useEffect(() => {
-    if (systems.length === 0 || selectedSystemId) return;
+    if (orderedSystems.length === 0 || selectedSystemId) return;
 
     const byName = lastActiveSystemName
-      ? systems.find((s) => s.name === lastActiveSystemName)
+      ? orderedSystems.find((s) => s.name === lastActiveSystemName)
       : undefined;
     const initial =
-      byName ?? systems.find((s) => s.name === "测试环境" || s.name === "测试") ?? systems[0];
+      byName ??
+      orderedSystems.find((s) => s.name === "测试环境" || s.name === "测试") ??
+      orderedSystems[0];
     if (!initial) return;
 
     const envs = environmentsBySystem[initial.id] ?? [];
+    const envId = resolveInitialEnvId(initial.id, envs);
     setSelectedSystemId(initial.id);
-    setSelectedEnvId(resolveInitialEnvId(initial.id, envs));
-  }, [systems, selectedSystemId, environmentsBySystem, resolveInitialEnvId, lastActiveSystemName]);
+    setSelectedEnvId(envId);
+    const env = envId ? envs.find((e) => e.id === envId) : undefined;
+    persistSelection(initial.name, env?.name);
+  }, [
+    orderedSystems,
+    selectedSystemId,
+    environmentsBySystem,
+    resolveInitialEnvId,
+    lastActiveSystemName,
+    persistSelection,
+  ]);
 
-  const environmentsForSystem = useMemo(
-    () => (selectedSystemId ? (environmentsBySystem[selectedSystemId] ?? []) : []),
-    [selectedSystemId, environmentsBySystem],
-  );
+  const environmentsForSystem = useMemo(() => {
+    const envs = selectedSystemId ? (environmentsBySystem[selectedSystemId] ?? []) : [];
+    return sortEnvironments(envs);
+  }, [selectedSystemId, environmentsBySystem, sortEnvironments]);
 
   const selectedSystem = useMemo(
-    () => systems.find((s) => s.id === selectedSystemId) ?? null,
-    [systems, selectedSystemId],
+    () => orderedSystems.find((s) => s.id === selectedSystemId) ?? null,
+    [orderedSystems, selectedSystemId],
   );
 
   const selectedEnvironment = useMemo(
@@ -74,7 +92,13 @@ export function O5EnvPage() {
   const handleSystemSelect = (systemId: string) => {
     setSelectedSystemId(systemId);
     const envs = environmentsBySystem[systemId] ?? [];
-    setSelectedEnvId(resolveInitialEnvId(systemId, envs));
+    const envId = resolveInitialEnvId(systemId, envs);
+    setSelectedEnvId(envId);
+    const system = orderedSystems.find((s) => s.id === systemId);
+    const env = envId ? envs.find((e) => e.id === envId) : undefined;
+    if (system) {
+      persistSelection(system.name, env?.name);
+    }
   };
 
   const handleEnvSelect = (envId: string) => {
@@ -140,9 +164,10 @@ export function O5EnvPage() {
               className="flex flex-col"
             >
               <SystemList
-                systems={systems}
+                systems={orderedSystems}
                 selectedId={selectedSystemId}
                 onSelect={handleSystemSelect}
+                onReorder={(activeId, overId) => reorderSystems(orderedSystems, activeId, overId)}
               />
             </ResizablePanel>
             <ResizableHandle withHandle variant="horizontal" className="bg-border shrink-0" />
@@ -153,6 +178,9 @@ export function O5EnvPage() {
                 systemKvId={selectedSystem?.name ?? null}
                 writable={writable}
                 onSelect={handleEnvSelect}
+                onReorder={(activeId, overId) =>
+                  reorderEnvironments(environmentsForSystem, activeId, overId)
+                }
                 onRefetch={() => void refetch()}
               />
             </ResizablePanel>

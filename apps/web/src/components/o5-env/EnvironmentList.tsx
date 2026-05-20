@@ -8,6 +8,7 @@ import type { O5Environment } from "@/types/o5-env";
 
 import { AddLinkDialog } from "./AddLinkDialog";
 import { SidebarNavItem } from "./SidebarNavItem";
+import { SortableSidebarNavList } from "./SortableSidebarNavList";
 
 type EnvironmentListProps = {
   environments: O5Environment[];
@@ -15,6 +16,7 @@ type EnvironmentListProps = {
   systemKvId: string | null;
   writable?: boolean;
   onSelect: (id: string) => void;
+  onReorder: (activeId: string, overId: string) => void;
   onRefetch: () => void;
 };
 
@@ -24,6 +26,7 @@ export function EnvironmentList({
   systemKvId,
   writable = false,
   onSelect,
+  onReorder,
   onRefetch,
 }: EnvironmentListProps) {
   const [addLinkOpen, setAddLinkOpen] = useState(false);
@@ -32,13 +35,21 @@ export function EnvironmentList({
 
   return (
     <section className="border-border/50 flex h-full min-h-0 flex-col overflow-hidden border-t bg-transparent">
-      <div className="flex shrink-0 items-center justify-between px-4 pt-3 pb-1.5">
+      <div className="flex min-w-0 shrink-0 items-center justify-between gap-2 px-4 pt-3 pb-1.5">
         <h2
           id="o5-env-list-heading"
-          className="text-muted-foreground/75 text-[10px] font-bold tracking-widest uppercase flex items-center gap-1.5"
+          className="text-muted-foreground/75 flex min-w-0 flex-1 items-center gap-1.5 text-[10px] font-bold tracking-widest uppercase"
         >
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500/60" />
-          环境列表
+          <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500/60" />
+          <span className="min-w-0 truncate">
+            环境列表
+            {environments.length > 0 && (
+              <span className="font-normal normal-case tracking-normal text-slate-400/80">
+                {" "}
+                · 按住拖动排序
+              </span>
+            )}
+          </span>
         </h2>
         <Button
           variant="ghost"
@@ -57,26 +68,26 @@ export function EnvironmentList({
         aria-labelledby="o5-env-list-heading"
         role="region"
       >
-        <ul className="flex flex-col gap-0.5 px-2 pb-2">
-          {environments.length === 0 ? (
-            <li className="text-muted-foreground/55 px-4 py-8 text-center text-xs italic">
-              暂无环境
-            </li>
-          ) : (
-            environments.map((env) => (
-              <li key={env.id}>
-                <SidebarNavItem
-                  appearance="soft"
-                  selected={env.id === selectedId}
-                  onClick={() => onSelect(env.id)}
-                  labelClassName="line-clamp-2 text-slate-700"
-                >
-                  {env.name}
-                </SidebarNavItem>
-              </li>
-            ))
-          )}
-        </ul>
+        {environments.length === 0 ? (
+          <p className="text-muted-foreground/55 px-4 py-8 text-center text-xs italic">暂无环境</p>
+        ) : (
+          <SortableSidebarNavList
+            items={environments}
+            listClassName="flex flex-col gap-0.5 px-2 pb-2"
+            onReorder={onReorder}
+            renderItem={(env, sortable) => (
+              <SidebarNavItem
+                appearance="soft"
+                selected={env.id === selectedId}
+                sortable={sortable}
+                onClick={() => onSelect(env.id)}
+                labelClassName="text-slate-700"
+              >
+                {env.name}
+              </SidebarNavItem>
+            )}
+          />
+        )}
       </div>
 
       {systemKvId && (

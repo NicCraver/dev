@@ -137,7 +137,6 @@ export function AddUserDialog({ open, kvId, onClose, onSuccess }: AddUserDialogP
           </label>
         </div>
         {error && <p className="text-xs text-destructive">{error}</p>}
-        <p className="text-[11px] text-muted-foreground">将写入当前系统「{kvId}」的账号列表。</p>
       </div>
     </FormDialog>
   );

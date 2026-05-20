@@ -21,7 +21,7 @@ export function AccountShowCompanyToggle({ showCompany, onChange }: AccountShowC
         variant="ghost"
         size="sm"
         className={cn(
-          "h-7 gap-1.5 px-2.5 text-xs font-medium",
+          "h-7 w-7 p-0",
           showCompany
             ? "text-primary bg-primary/10 hover:!bg-primary/15 hover:!text-primary active:!bg-primary/15 active:!text-primary"
             : "text-muted-foreground hover:!bg-primary-subtle hover:!text-muted-foreground active:!bg-primary/12 active:!text-muted-foreground",
@@ -32,7 +32,6 @@ export function AccountShowCompanyToggle({ showCompany, onChange }: AccountShowC
         onClick={() => onChange(!showCompany)}
       >
         <Icon icon={CorporateIcon} className="size-3.5 shrink-0" strokeWidth={1.75} />
-        <span className="hidden sm:inline">公司</span>
       </Button>
     </div>
   );

@@ -37,14 +37,13 @@ export function AccountLayoutSwitcher({ layout, onChange }: AccountLayoutSwitche
             type="button"
             variant="ghost"
             size="sm"
-            className={cn("h-7 gap-1 px-2", segmentButtonClasses(selected))}
+            className={cn("h-7 w-7 p-0", segmentButtonClasses(selected))}
             aria-pressed={selected}
             aria-label={label}
             title={label}
             onClick={() => onChange(value)}
           >
             <Icon icon={icon} className="size-3.5" />
-            <span className="hidden sm:inline">{value === "auto" ? "自动" : value}</span>
           </Button>
         );
       })}

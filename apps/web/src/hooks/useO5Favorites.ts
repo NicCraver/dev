@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 
+import { reorderIds } from "@/lib/apply-account-order";
+
 const STORAGE_KEY = "o5-env-favorites";
 
 function readFavorites(): string[] {
@@ -28,5 +30,19 @@ export function useO5Favorites() {
     );
   }, []);
 
-  return { favorites, isFavorite, toggleFavorite };
+  const reorderFavorites = useCallback(
+    (activeId: string, overId: string, visibleIds?: string[]) => {
+      setFavorites((prev) => {
+        const subset = visibleIds ?? prev;
+        const subsetSet = new Set(subset);
+        const subsetOrder = prev.filter((id) => subsetSet.has(id));
+        const reorderedSubset = reorderIds(subsetOrder, activeId, overId);
+        let index = 0;
+        return prev.map((id) => (subsetSet.has(id) ? reorderedSubset[index++]! : id));
+      });
+    },
+    [],
+  );
+
+  return { favorites, isFavorite, toggleFavorite, reorderFavorites };
 }

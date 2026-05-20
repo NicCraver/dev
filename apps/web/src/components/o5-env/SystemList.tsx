@@ -3,30 +3,41 @@ import type { O5System } from "@/types/o5-env";
 import { cn } from "@/lib/utils";
 
 import { SidebarNavItem } from "./SidebarNavItem";
+import { SortableSidebarNavList } from "./SortableSidebarNavList";
 
 type SystemListProps = {
   systems: O5System[];
   selectedId: string | null;
   onSelect: (id: string) => void;
+  onReorder: (activeId: string, overId: string) => void;
 };
 
-export function SystemList({ systems, selectedId, onSelect }: SystemListProps) {
+export function SystemList({ systems, selectedId, onSelect, onReorder }: SystemListProps) {
   return (
     <section className="flex h-full min-h-0 flex-col overflow-hidden bg-transparent">
-      <h2 className="text-muted-foreground/75 shrink-0 px-4 pt-3 pb-1.5 text-[10px] font-bold tracking-widest uppercase flex items-center gap-1.5">
-        <span className="h-1.5 w-1.5 rounded-full bg-primary/60" />
-        系统列表
+      <h2 className="text-muted-foreground/75 flex min-w-0 shrink-0 items-center gap-1.5 px-4 pt-3 pb-1.5 text-[10px] font-bold tracking-widest uppercase">
+        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary/60" />
+        <span className="min-w-0 truncate">
+          系统列表
+          <span className="font-normal normal-case tracking-normal text-slate-400/80">
+            {" "}
+            · 按住拖动排序
+          </span>
+        </span>
       </h2>
-      <ul className="scrollbar-thin flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto overscroll-y-contain px-2 pb-2">
-        {systems.map((system) => {
-          const isSelected = system.id === selectedId;
-          return (
-            <li key={system.id}>
+      <div className="scrollbar-thin min-h-0 flex-1 overflow-y-auto overscroll-y-contain">
+        <SortableSidebarNavList
+          items={systems}
+          listClassName="flex flex-col gap-0.5 px-2 pb-2"
+          onReorder={onReorder}
+          renderItem={(system, sortable) => {
+            const isSelected = system.id === selectedId;
+            return (
               <SidebarNavItem
                 appearance="soft"
                 selected={isSelected}
+                sortable={sortable}
                 onClick={() => onSelect(system.id)}
-                labelClassName="truncate"
                 trailing={
                   <Badge
                     variant="outline"
@@ -42,10 +53,10 @@ export function SystemList({ systems, selectedId, onSelect }: SystemListProps) {
               >
                 {system.name}
               </SidebarNavItem>
-            </li>
-          );
-        })}
-      </ul>
+            );
+          }}
+        />
+      </div>
     </section>
   );
 }
