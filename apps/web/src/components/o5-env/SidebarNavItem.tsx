@@ -49,7 +49,7 @@ export function SidebarNavItem({
           )}
         />
       )}
-      <span className={cn("min-w-0 flex-1", labelClassName)}>{children}</span>
+      <span className={cn("min-w-0 flex-1 font-medium", labelClassName)}>{children}</span>
       {trailing}
     </button>
   );

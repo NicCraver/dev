@@ -1,7 +1,11 @@
+import "./load-env.ts";
+
 import { serve } from "@hono/node-server";
 import type { HealthResponse } from "@mt-dev/shared";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+
+import { registerO5EnvRoutes } from "./routes/o5-env.ts";
 
 const PORT = Number(process.env.PORT ?? 6333);
 
@@ -18,6 +22,8 @@ app.get("/api/health", (c) => {
   const body: HealthResponse = { status: "ok" };
   return c.json(body);
 });
+
+registerO5EnvRoutes(app);
 
 serve(
   {

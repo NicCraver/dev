@@ -1,6 +1,7 @@
 import { pinyin } from "pinyin-pro";
 
-import type { O5Account } from "@/mocks/o5-env";
+import type { O5Account } from "@/types/o5-env";
+import { accountOrgLabel, accountPhone } from "@/types/o5-env";
 
 const CJK_RE = /[\u4e00-\u9fff]/;
 
@@ -44,7 +45,13 @@ export function matchesAccount(account: O5Account, query: string): boolean {
   const q = query.trim().toLowerCase();
   if (!q) return true;
 
-  return matchesField(account.name, q) || matchesField(account.org, q) || account.phone.includes(q);
+  const orgText = accountOrgLabel(account);
+  return (
+    matchesField(account.name, q) ||
+    matchesField(orgText, q) ||
+    accountPhone(account).includes(q) ||
+    account.corpList.some((corp) => matchesField(corp.name, q))
+  );
 }
 
 export function filterAccounts(accounts: O5Account[], query: string): O5Account[] {

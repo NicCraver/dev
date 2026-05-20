@@ -3,25 +3,29 @@ import { useState, type KeyboardEvent, type MouseEvent } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
-import type { O5Account } from "@/mocks/o5-env";
+import { openAccountJump } from "@/lib/account-jump";
 import { copyPhone } from "@/lib/copy-phone";
 import { favoriteChipClasses, favoriteChipIconClasses } from "@/lib/interaction";
-import { openAccountPage } from "@/lib/open-account-page";
+import { accountOrgLabel, accountPhone, type O5Account } from "@/types/o5-env";
 import { cn } from "@/lib/utils";
 
 type FavoritesSectionProps = {
   accounts: O5Account[];
-  environmentName: string;
   activeAccountId?: string;
   showCompany?: boolean;
+  jumpEnabled?: boolean;
+  targetUrl?: string | null;
+  windowFeatures?: string;
   onToggleFavorite: (accountId: string) => void;
 };
 
 export function FavoritesSection({
   accounts,
-  environmentName,
   activeAccountId,
   showCompany = false,
+  jumpEnabled = false,
+  targetUrl = null,
+  windowFeatures,
   onToggleFavorite,
 }: FavoritesSectionProps) {
   if (accounts.length === 0) return null;
@@ -40,9 +44,11 @@ export function FavoritesSection({
           <FavoriteChip
             key={account.id}
             account={account}
-            environmentName={environmentName}
             isActive={account.id === activeAccountId}
             showCompany={showCompany}
+            jumpEnabled={jumpEnabled}
+            targetUrl={targetUrl}
+            windowFeatures={windowFeatures}
             onToggleFavorite={onToggleFavorite}
           />
         ))}
@@ -53,26 +59,40 @@ export function FavoritesSection({
 
 function FavoriteChip({
   account,
-  environmentName,
   isActive,
   showCompany,
+  jumpEnabled,
+  targetUrl,
+  windowFeatures,
   onToggleFavorite,
 }: {
   account: O5Account;
-  environmentName: string;
   isActive: boolean;
   showCompany: boolean;
+  jumpEnabled: boolean;
+  targetUrl: string | null;
+  windowFeatures?: string;
   onToggleFavorite: (accountId: string) => void;
 }) {
   const [copied, setCopied] = useState(false);
+  const defaultCorp = account.corpList[0];
 
-  const handleOpen = () => {
-    openAccountPage(account, environmentName);
+  const handleOpen = (event: MouseEvent | KeyboardEvent) => {
+    if (!jumpEnabled || !defaultCorp) return;
+    const ctrlKey = "ctrlKey" in event && (event.ctrlKey || event.metaKey);
+    void openAccountJump({
+      username: account.username,
+      password: account.password,
+      corpId: defaultCorp.corpId,
+      targetUrl: targetUrl ?? "",
+      features: windowFeatures,
+      ctrlKey,
+    });
   };
 
   const handleCopy = async (event: MouseEvent) => {
     event.stopPropagation();
-    await copyPhone(account.phone);
+    await copyPhone(accountPhone(account));
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1500);
   };
@@ -85,7 +105,7 @@ function FavoriteChip({
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
-      handleOpen();
+      handleOpen(event);
     }
   };
 
@@ -96,12 +116,14 @@ function FavoriteChip({
       role="button"
       tabIndex={0}
       aria-label={`打开 ${account.name} 的登录页`}
-      onClick={handleOpen}
+      onClick={(event) => jumpEnabled && handleOpen(event)}
       onKeyDown={handleKeyDown}
     >
       <span className="min-w-0 flex-1 truncate px-2.5 py-1.5 font-semibold">
         {account.name}
-        {showCompany && <span className="text-slate-400/80 font-normal"> · {account.org}</span>}
+        {showCompany && defaultCorp && (
+          <span className="text-slate-400/80 font-normal"> · {accountOrgLabel(account)}</span>
+        )}
       </span>
       <div className="flex shrink-0 items-center gap-0.5">
         <Button

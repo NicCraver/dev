@@ -1,9 +1,9 @@
-import { UserGroupIcon } from "@hugeicons/core-free-icons";
+import { UserAdd01Icon, UserGroupIcon } from "@hugeicons/core-free-icons";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
-import type { O5Account } from "@/mocks/o5-env";
+import { accountPhone, type O5Account } from "@/types/o5-env";
 import { filterAccounts } from "@/lib/account-search";
 import { textLinkClasses, shortcutKbdClasses } from "@/lib/interaction";
 import { useModShortcut } from "@/lib/keyboard-shortcut";
@@ -12,25 +12,43 @@ import { useGridColumns } from "@/hooks/useGridColumns";
 import { resolveGridColumns, useO5GridLayout, type O5GridLayout } from "@/hooks/useO5GridLayout";
 import { useO5Favorites } from "@/hooks/useO5Favorites";
 import { useO5ShowCompany } from "@/hooks/useO5ShowCompany";
+import { cn } from "@/lib/utils";
 
 import { AccountCard } from "./AccountCard";
 import { AccountLayoutSwitcher } from "./AccountLayoutSwitcher";
 import { AccountShowCompanyToggle } from "./AccountShowCompanyToggle";
 import { AccountSearchBar, type AccountSearchBarHandle } from "./AccountSearchBar";
+import { AddUserDialog } from "./AddUserDialog";
 import { FavoritesSection } from "./FavoritesSection";
 
 type AccountCardListProps = {
   accounts: O5Account[];
   environmentName: string | null;
+  systemKvId?: string | null;
+  writable?: boolean;
+  targetUrl?: string | null;
+  windowFeatures?: string;
+  onRefetch?: () => void;
 };
 
-export function AccountCardList({ accounts, environmentName }: AccountCardListProps) {
+export function AccountCardList({
+  accounts,
+  environmentName,
+  systemKvId = null,
+  writable = false,
+  targetUrl = null,
+  windowFeatures,
+  onRefetch,
+}: AccountCardListProps) {
+  const jumpEnabled = Boolean(targetUrl?.trim());
   const { isFavorite, toggleFavorite } = useO5Favorites();
   const { layout, setLayout } = useO5GridLayout();
   const { showCompany, setShowCompany } = useO5ShowCompany();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
+  const [addUserOpen, setAddUserOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
+  const canWrite = writable && Boolean(systemKvId);
   const searchRef = useRef<AccountSearchBarHandle>(null);
   const [gridNode, setGridNode] = useState<HTMLDivElement | null>(null);
   const autoColumns = useGridColumns(gridNode);
@@ -84,7 +102,7 @@ export function AccountCardList({ accounts, environmentName }: AccountCardListPr
   const copyActiveAccount = useCallback(async () => {
     const account = navigableAccounts[activeIndex];
     if (!account) return;
-    await copyPhone(account.phone);
+    await copyPhone(accountPhone(account));
   }, [activeIndex, navigableAccounts]);
 
   const handleSearchKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -166,8 +184,10 @@ export function AccountCardList({ accounts, environmentName }: AccountCardListPr
           count={0}
           layout={layout}
           showCompany={showCompany}
+          canWrite={canWrite}
           onShowCompanyChange={setShowCompany}
           onLayoutChange={setLayout}
+          onAddUser={() => setAddUserOpen(true)}
         />
         <div className="flex min-h-0 flex-1 flex-col items-center justify-center p-8 text-center">
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 dark:bg-zinc-900 border border-slate-200/50 dark:border-zinc-800 text-slate-400 mb-4">
@@ -175,9 +195,17 @@ export function AccountCardList({ accounts, environmentName }: AccountCardListPr
           </div>
           <h3 className="text-sm font-bold text-slate-700 dark:text-zinc-300">该环境下暂无账号</h3>
           <p className="text-xs text-slate-400 mt-1.5 max-w-[260px] leading-relaxed">
-            当前环境尚未登记测试账号，您可以等待自动同步，或在上方功能开放后手动添加。
+            当前环境尚未登记测试账号，可点击右上角「添加账号」手动登记。
           </p>
         </div>
+        {systemKvId && (
+          <AddUserDialog
+            open={addUserOpen}
+            kvId={systemKvId}
+            onClose={() => setAddUserOpen(false)}
+            onSuccess={() => onRefetch?.()}
+          />
+        )}
       </div>
     );
   }
@@ -191,10 +219,12 @@ export function AccountCardList({ accounts, environmentName }: AccountCardListPr
         count={accounts.length}
         layout={layout}
         showCompany={showCompany}
+        canWrite={canWrite}
         searchOpen={searchOpen}
         onShowCompanyChange={setShowCompany}
         onLayoutChange={setLayout}
         onOpenSearch={() => setSearchOpen(true)}
+        onAddUser={() => setAddUserOpen(true)}
       />
       <AccountSearchBar
         ref={searchRef}
@@ -217,9 +247,11 @@ export function AccountCardList({ accounts, environmentName }: AccountCardListPr
       />
       <FavoritesSection
         accounts={favoriteAccounts}
-        environmentName={environmentName}
         activeAccountId={activeAccountId}
         showCompany={showCompany}
+        jumpEnabled={jumpEnabled}
+        targetUrl={targetUrl}
+        windowFeatures={windowFeatures}
         onToggleFavorite={toggleFavorite}
       />
       <div
@@ -259,12 +291,23 @@ export function AccountCardList({ accounts, environmentName }: AccountCardListPr
                 isActive={account.id === activeAccountId}
                 searchQuery={searchQuery}
                 showCompany={showCompany}
+                jumpEnabled={jumpEnabled}
+                targetUrl={targetUrl}
+                windowFeatures={windowFeatures}
                 onToggleFavorite={toggleFavorite}
               />
             ))}
           </div>
         )}
       </div>
+      {systemKvId && (
+        <AddUserDialog
+          open={addUserOpen}
+          kvId={systemKvId}
+          onClose={() => setAddUserOpen(false)}
+          onSuccess={() => onRefetch?.()}
+        />
+      )}
     </div>
   );
 }
@@ -274,19 +317,23 @@ function AccountListHeader({
   count,
   layout,
   showCompany,
+  canWrite,
   searchOpen,
   onLayoutChange,
   onShowCompanyChange,
   onOpenSearch,
+  onAddUser,
 }: {
   environmentName: string;
   count: number;
   layout: O5GridLayout;
   showCompany: boolean;
+  canWrite?: boolean;
   searchOpen?: boolean;
   onLayoutChange: (layout: O5GridLayout) => void;
   onShowCompanyChange: (show: boolean) => void;
   onOpenSearch?: () => void;
+  onAddUser?: () => void;
 }) {
   const searchShortcut = useModShortcut("f");
 
@@ -315,6 +362,26 @@ function AccountListHeader({
         </p>
       </div>
       <div className="flex shrink-0 items-center gap-3">
+        {onAddUser && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className={cn(
+              "h-7 gap-1.5 px-2.5 text-xs font-medium",
+              canWrite
+                ? "text-muted-foreground hover:!bg-primary-subtle hover:!text-foreground"
+                : "text-muted-foreground opacity-40",
+            )}
+            title={canWrite ? "添加账号" : "需连接 MongoDB 且选中系统"}
+            aria-label="添加账号"
+            disabled={!canWrite}
+            onClick={onAddUser}
+          >
+            <Icon icon={UserAdd01Icon} className="size-3.5 shrink-0" strokeWidth={1.75} />
+            <span className="hidden sm:inline">添加账号</span>
+          </Button>
+        )}
         <AccountShowCompanyToggle showCompany={showCompany} onChange={onShowCompanyChange} />
         <AccountLayoutSwitcher layout={layout} onChange={onLayoutChange} />
       </div>

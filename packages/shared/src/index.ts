@@ -3,3 +3,5 @@ export type HealthResponse = {
 };
 
 export type DevDashModuleId = "o5-env" | "zhiyou-env" | "aichat-env" | "tools";
+
+export * from "./o5-env.js";

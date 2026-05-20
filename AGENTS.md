@@ -44,7 +44,7 @@ pnpm check                # 各包 check（web 为 vp check）
 - **模块注册**：`apps/web/src/app/modules.ts` 定义 `DevDashModule`（id、路由、图标、页面组件）。新增侧栏模块时同步更新 `packages/shared` 中的 `DevDashModuleId` 与 `App.tsx` 路由（由 `modules` 数组驱动）。
 - **壳布局**：`AppShell` = `AppRail` + `<Outlet />`；默认重定向到 `/o5-env`。
 - **工具页**：`apps/web/src/app/tools/registry.tsx` 注册 `ToolDefinition`；页面在 `components/tools/`，纯逻辑可放 `lib/`（如 `json-repair.ts`、`timestamp-parse.ts`）。
-- **O5 env**：`pages/o5-env/`、`components/o5-env/`；账号数据目前来自 `mocks/o5-env.ts`。
+- **O5 env**：`pages/o5-env/`、`components/o5-env/`；数据来自 `GET /api/o5-env/bootstrap`（Mongo 库 `mt-dev`：`accounts` 全局账号 + `systems` 环境与引用），dev 无库时回退 `mocks/o5-env.ts`；`pnpm --filter @mt-dev/api db:init` / `db:seed`；跳转见 `lib/external-login.ts`、`lib/account-jump.ts`。
 - **UI**：shadcn 风格组件在 `components/ui/`；图标用 `@hugeicons/react`；样式 Tailwind 4 + `index.css` 设计 token。
 - **交互**：键盘/滚动等共享逻辑见 `lib/interaction.ts`、`lib/keyboard-shortcut.ts`。
 
@@ -52,7 +52,8 @@ pnpm check                # 各包 check（web 为 vp check）
 
 - 入口 `apps/api/src/index.ts`（Hono + `@hono/node-server`）。
 - 新增接口保持 `/api/*` 前缀；共享响应类型放在 `@mt-dev/shared`。
-- 环境变量示例见 `apps/api/.env.example`（默认 `PORT=6333`）。
+- 环境变量见 `apps/api/.env.example`（启动时自动加载；可选 `apps/api/.env` 覆盖，已 gitignore）。
+- O5 相关路由：`/api/o5-env/bootstrap`、`/api/o5-env/login-proxy`、`/api/user/add`、`/api/link/add`、`/api/recommend/:env`、`/api/share/new`。Mongo 集合见 `apps/api/src/db/mongo.ts`（`accounts`、`systems`；旧 `kvs` 仅 env-share 兼容）。
 
 ## 改动时注意
 

@@ -1,12 +1,12 @@
 import { Badge } from "@/components/ui/badge";
-import type { O5System } from "@/mocks/o5-env";
+import type { O5System } from "@/types/o5-env";
 import { cn } from "@/lib/utils";
 
 import { SidebarNavItem } from "./SidebarNavItem";
 
 type SystemListProps = {
   systems: O5System[];
-  selectedId: string;
+  selectedId: string | null;
   onSelect: (id: string) => void;
 };
 
