@@ -1,7 +1,9 @@
-import { GripHorizontal, GripVertical } from "lucide-react";
+import { GripHorizontal, GripVertical } from "@hugeicons/core-free-icons";
 import type { ComponentProps } from "react";
 import { Group, Panel, Separator } from "react-resizable-panels";
 
+import { Icon } from "@/components/ui/icon";
+import { resizableHandleClasses } from "@/lib/interaction";
 import { cn } from "@/lib/utils";
 
 function ResizablePanelGroup({
@@ -43,8 +45,9 @@ function ResizableHandle({
     <Separator
       data-slot="resizable-handle"
       className={cn(
-        "bg-border relative z-10 shrink-0 outline-none focus:outline-none focus-visible:outline-none",
-        isVertical ? "w-px" : "h-px w-full",
+        "bg-border relative z-10 shrink-0 cursor-col-resize",
+        resizableHandleClasses(),
+        isVertical ? "w-px cursor-col-resize" : "h-px w-full cursor-row-resize",
         withHandle && "flex items-center justify-center",
         className,
       )}
@@ -59,9 +62,9 @@ function ResizableHandle({
           aria-hidden
         >
           {isVertical ? (
-            <GripVertical className="text-muted-foreground size-2.5" />
+            <Icon icon={GripVertical} className="text-muted-foreground size-2.5" />
           ) : (
-            <GripHorizontal className="text-muted-foreground size-2.5" />
+            <Icon icon={GripHorizontal} className="text-muted-foreground size-2.5" />
           )}
         </div>
       ) : null}

@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import { accountCardSurfaceClasses } from "@/lib/interaction";
 
 export function HighlightText({
   text,
@@ -25,7 +25,7 @@ export function HighlightText({
   return (
     <span className={className}>
       {text.slice(0, index)}
-      <mark className="bg-primary/20 rounded-sm px-0.5">
+      <mark className="text-primary rounded-xs bg-primary/8 px-1 py-0.5 font-semibold">
         {text.slice(index, index + trimmed.length)}
       </mark>
       {text.slice(index + trimmed.length)}
@@ -34,8 +34,5 @@ export function HighlightText({
 }
 
 export function accountCardClassName(isActive: boolean) {
-  return cn(
-    "bg-card hover:border-border/80 rounded-lg border px-4 py-3 shadow-xs transition-colors hover:shadow-sm",
-    isActive && "border-primary ring-primary/30 ring-2",
-  );
+  return accountCardSurfaceClasses(isActive);
 }

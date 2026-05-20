@@ -1,9 +1,11 @@
-import { Users } from "lucide-react";
+import { UserGroupIcon } from "@hugeicons/core-free-icons";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { Icon } from "@/components/ui/icon";
 import type { O5Account } from "@/mocks/o5-env";
 import { filterAccounts } from "@/lib/account-search";
+import { textLinkClasses } from "@/lib/interaction";
 import { copyPhone } from "@/lib/copy-phone";
 import { useGridColumns } from "@/hooks/useGridColumns";
 import { resolveGridColumns, useO5GridLayout, type O5GridLayout } from "@/hooks/useO5GridLayout";
@@ -137,24 +139,38 @@ export function AccountCardList({ accounts, environmentName }: AccountCardListPr
 
   if (!environmentName) {
     return (
-      <div className="text-muted-foreground flex h-full min-h-0 flex-col items-center justify-center gap-2 text-sm">
-        <Users className="text-muted-foreground/50 size-10" strokeWidth={1.25} />
-        <p>请选择一个环境</p>
+      <div className="flex h-full min-h-0 flex-col items-center justify-center p-8 text-center bg-[#f8fafc] dark:bg-neutral-950/20">
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/5 border border-primary/10 shadow-[0_4px_16px_rgba(52,110,238,0.06)] text-primary mb-4">
+          <Icon icon={UserGroupIcon} className="size-6 text-primary/85" strokeWidth={1.5} />
+        </div>
+        <h3 className="text-sm font-bold text-slate-800 dark:text-zinc-200">请选择一个环境</h3>
+        <p className="text-xs text-slate-400 mt-1.5 max-w-[280px] leading-relaxed">
+          在左侧点击对应的系统和具体环境，即可开始浏览该环境下的测试账号并快捷一键复制。
+        </p>
       </div>
     );
   }
 
   if (accounts.length === 0) {
     return (
-      <div className="flex h-full min-h-0 flex-col overflow-hidden" data-account-panel>
+      <div
+        className="flex h-full min-h-0 flex-col overflow-hidden bg-[#f8fafc] dark:bg-neutral-950/20"
+        data-account-panel
+      >
         <AccountListHeader
           environmentName={environmentName}
           count={0}
           layout={layout}
           onLayoutChange={setLayout}
         />
-        <div className="text-muted-foreground flex min-h-0 flex-1 flex-col items-center justify-center gap-1 text-sm">
-          <p>该环境下暂无账号</p>
+        <div className="flex min-h-0 flex-1 flex-col items-center justify-center p-8 text-center">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 dark:bg-zinc-900 border border-slate-200/50 dark:border-zinc-800 text-slate-400 mb-4">
+            <Icon icon={UserGroupIcon} className="size-6 text-slate-400" strokeWidth={1.5} />
+          </div>
+          <h3 className="text-sm font-bold text-slate-700 dark:text-zinc-300">该环境下暂无账号</h3>
+          <p className="text-xs text-slate-400 mt-1.5 max-w-[260px] leading-relaxed">
+            当前环境尚未登记测试账号，您可以等待自动同步，或在上方功能开放后手动添加。
+          </p>
         </div>
       </div>
     );
@@ -203,9 +219,20 @@ export function AccountCardList({ accounts, environmentName }: AccountCardListPr
         aria-label="账号列表"
       >
         {filteredAccounts.length === 0 ? (
-          <div className="text-muted-foreground flex flex-col items-center justify-center gap-2 p-8 text-sm">
-            <p>未找到匹配账号</p>
-            <Button variant="outline" size="sm" onClick={() => setSearchQuery("")}>
+          <div className="flex flex-col items-center justify-center p-12 text-center bg-transparent">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 dark:bg-neutral-800/40 text-slate-400 dark:text-zinc-500 mb-4 border border-slate-200/50 dark:border-zinc-800">
+              <Icon icon={UserGroupIcon} className="size-5 text-slate-400" strokeWidth={1.5} />
+            </div>
+            <h3 className="text-sm font-bold text-slate-700 dark:text-zinc-300">未找到匹配账号</h3>
+            <p className="text-xs text-slate-400 mt-1 max-w-[240px] leading-relaxed mb-4">
+              试着搜索其他关键词，或者点击下方按钮快速清空当前搜索词。
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-lg font-medium text-xs shadow-2xs hover:bg-slate-50 transition-all active:scale-95 px-3 py-1.5"
+              onClick={() => setSearchQuery("")}
+            >
               清空搜索
             </Button>
           </div>
@@ -247,20 +274,27 @@ function AccountListHeader({
   onOpenSearch?: () => void;
 }) {
   return (
-    <header className="flex shrink-0 items-start justify-between gap-3 border-b bg-white px-4 py-3">
+    <header className="flex shrink-0 items-center justify-between gap-3 border-b border-neutral-200/40 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md px-6 py-3.5 z-20">
       <div className="min-w-0">
-        <h1 className="truncate text-lg font-semibold tracking-tight">{environmentName}</h1>
-        <p className="text-muted-foreground mt-0.5 text-sm">
-          {count > 0 ? `${count} 个账号` : "暂无账号"}
+        <h1 className="truncate text-lg font-bold tracking-tight text-slate-800 dark:text-zinc-100">
+          {environmentName}
+        </h1>
+        <p className="text-muted-foreground mt-0.5 text-xs font-medium">
+          {count > 0 ? (
+            <>
+              共 <span className="text-primary font-bold tabular-nums">{count}</span> 个测试账号
+            </>
+          ) : (
+            "暂无登记账号"
+          )}
           {!searchOpen && onOpenSearch && count > 0 && (
             <>
               {" · "}
-              <button
-                type="button"
-                className="hover:text-foreground underline-offset-2 transition-colors hover:underline"
-                onClick={onOpenSearch}
-              >
-                <kbd className="font-mono">⌘F</kbd> 搜索
+              <button type="button" className={textLinkClasses()} onClick={onOpenSearch}>
+                <kbd className="font-mono bg-primary/6 border border-primary/10 rounded-md px-1.5 py-0.5 text-[10px]">
+                  ⌘F
+                </kbd>{" "}
+                搜索
               </button>
             </>
           )}

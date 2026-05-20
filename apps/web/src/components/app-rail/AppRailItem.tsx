@@ -1,31 +1,28 @@
-import type { LucideIcon } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
+import { Icon, type IconSvgElement } from "@/components/ui/icon";
+import { appRailButtonClasses } from "@/lib/interaction";
 import { cn } from "@/lib/utils";
 
 type AppRailItemProps = {
   to: string;
   label: string;
-  icon: LucideIcon;
+  icon: IconSvgElement;
 };
 
-export function AppRailItem({ to, label, icon: Icon }: AppRailItemProps) {
+export function AppRailItem({ to, label, icon }: AppRailItemProps) {
   return (
     <NavLink to={to} title={label} end>
       {({ isActive }) => (
         <Button
           variant="ghost"
           size="icon"
-          className={cn(
-            "size-10",
-            isActive &&
-              "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground",
-          )}
+          className={cn("size-10", appRailButtonClasses(isActive))}
           aria-label={label}
           aria-current={isActive ? "page" : undefined}
         >
-          <Icon className="size-5" />
+          <Icon icon={icon} className="size-5" />
         </Button>
       )}
     </NavLink>

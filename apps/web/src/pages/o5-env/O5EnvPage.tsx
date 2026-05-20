@@ -58,7 +58,7 @@ export function O5EnvPage() {
           defaultSize="22%"
           minSize="14%"
           maxSize="42%"
-          className="border-border bg-white text-foreground border-r"
+          className="border-border/60 bg-[#fcfcfe] dark:bg-neutral-900 text-foreground border-r"
         >
           <ResizablePanelGroup
             id="o5-env-sidebar"
@@ -93,7 +93,11 @@ export function O5EnvPage() {
 
         <ResizableHandle withHandle variant="vertical" />
 
-        <ResizablePanel id="accounts" minSize="35%" className="flex flex-col bg-white">
+        <ResizablePanel
+          id="accounts"
+          minSize="35%"
+          className="flex flex-col bg-[#f8fafc] dark:bg-neutral-950/40"
+        >
           <AccountCardList
             accounts={accountsForEnv}
             environmentName={selectedEnvironment?.name ?? null}

@@ -12,26 +12,28 @@ type SystemListProps = {
 
 export function SystemList({ systems, selectedId, onSelect }: SystemListProps) {
   return (
-    <section className="flex h-full min-h-0 flex-col overflow-hidden bg-white">
-      <h2 className="text-muted-foreground shrink-0 px-3 py-2 text-xs font-medium tracking-wide">
+    <section className="flex h-full min-h-0 flex-col overflow-hidden bg-transparent">
+      <h2 className="text-muted-foreground/75 shrink-0 px-4 pt-3 pb-1.5 text-[10px] font-bold tracking-widest uppercase flex items-center gap-1.5">
+        <span className="h-1.5 w-1.5 rounded-full bg-primary/60" />
         系统列表
       </h2>
-      <ul className="scrollbar-thin flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto overscroll-y-contain px-1 pb-2">
+      <ul className="scrollbar-thin flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto overscroll-y-contain px-2 pb-2">
         {systems.map((system) => {
           const isSelected = system.id === selectedId;
           return (
             <li key={system.id}>
               <SidebarNavItem
+                appearance="soft"
                 selected={isSelected}
                 onClick={() => onSelect(system.id)}
                 labelClassName="truncate"
                 trailing={
                   <Badge
-                    variant={isSelected ? "secondary" : "outline"}
+                    variant="outline"
                     className={cn(
-                      "tabular-nums",
+                      "tabular-nums border-primary/10 bg-white/40 px-1.5 py-0 text-[10px] text-primary/85 font-medium tracking-tight",
                       isSelected &&
-                        "border-primary-foreground/20 bg-primary-foreground/15 text-primary-foreground",
+                        "border-primary/25 bg-white text-primary font-semibold shadow-2xs",
                     )}
                   >
                     {system.count}

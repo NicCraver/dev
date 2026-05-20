@@ -1,7 +1,8 @@
-import { Construction } from "lucide-react";
+import { ConstructionIcon } from "@hugeicons/core-free-icons";
 import { motion } from "motion/react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Icon } from "@/components/ui/icon";
 
 type ComingSoonProps = {
   title: string;
@@ -18,7 +19,7 @@ export function ComingSoon({ title, description = "开发中，敬请期待" }: 
     >
       <Card className="w-full max-w-md text-center">
         <CardHeader className="items-center">
-          <Construction className="text-muted-foreground mb-2 size-10" />
+          <Icon icon={ConstructionIcon} className="text-muted-foreground mb-2 size-10" />
           <CardTitle>{title}</CardTitle>
         </CardHeader>
         <CardContent>

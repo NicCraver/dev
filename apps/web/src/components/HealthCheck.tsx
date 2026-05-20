@@ -1,11 +1,18 @@
 import type { HealthResponse } from "@mt-dev/shared";
-import { Activity, CheckCircle2, Loader2, RefreshCw, XCircle } from "lucide-react";
+import {
+  Activity01Icon,
+  CancelCircleIcon,
+  CheckmarkCircle01Icon,
+  Loading03Icon,
+  Refresh01Icon,
+} from "@hugeicons/core-free-icons";
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Icon } from "@/components/ui/icon";
 
 type ConnectionState =
   | { kind: "loading" }
@@ -53,7 +60,7 @@ export function HealthCheck() {
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
-              <Activity className="size-5 text-primary" />
+              <Icon icon={Activity01Icon} className="text-primary size-5" />
               <CardTitle>API 联调测试</CardTitle>
             </div>
             <CardDescription>
@@ -71,8 +78,11 @@ export function HealthCheck() {
                   exit={{ opacity: 0, scale: 0.95 }}
                   className="flex items-center gap-3 rounded-lg border border-dashed p-4"
                 >
-                  <Loader2 className="size-5 animate-spin text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">正在连接后端…</span>
+                  <Icon
+                    icon={Loading03Icon}
+                    className="text-muted-foreground size-5 animate-spin"
+                  />
+                  <span className="text-muted-foreground text-sm">正在连接后端…</span>
                 </motion.div>
               )}
 
@@ -85,10 +95,10 @@ export function HealthCheck() {
                   className="flex items-center justify-between rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-4"
                 >
                   <div className="flex items-center gap-3">
-                    <CheckCircle2 className="size-5 text-emerald-600" />
+                    <Icon icon={CheckmarkCircle01Icon} className="size-5 text-emerald-600" />
                     <div>
                       <p className="text-sm font-medium">连接成功</p>
-                      <p className="text-xs text-muted-foreground">status: {state.data.status}</p>
+                      <p className="text-muted-foreground text-xs">status: {state.data.status}</p>
                     </div>
                   </div>
                   <Badge variant="success">Online</Badge>
@@ -104,10 +114,10 @@ export function HealthCheck() {
                   className="flex items-center justify-between rounded-lg border border-destructive/30 bg-destructive/5 p-4"
                 >
                   <div className="flex items-center gap-3">
-                    <XCircle className="size-5 text-destructive" />
+                    <Icon icon={CancelCircleIcon} className="text-destructive size-5" />
                     <div>
                       <p className="text-sm font-medium">连接失败</p>
-                      <p className="text-xs text-muted-foreground">{state.message}</p>
+                      <p className="text-muted-foreground text-xs">{state.message}</p>
                     </div>
                   </div>
                   <Badge variant="destructive">Offline</Badge>
@@ -121,7 +131,10 @@ export function HealthCheck() {
               onClick={() => void checkHealth()}
               disabled={state.kind === "loading"}
             >
-              <RefreshCw className={state.kind === "loading" ? "animate-spin" : ""} />
+              <Icon
+                icon={Refresh01Icon}
+                className={state.kind === "loading" ? "animate-spin" : ""}
+              />
               重新检测
             </Button>
           </CardContent>
