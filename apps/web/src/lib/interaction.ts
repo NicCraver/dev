@@ -67,32 +67,40 @@ export function segmentButtonClasses(selected: boolean) {
     pressable,
     selected && [
       "bg-primary text-primary-foreground",
-      "hover:bg-primary/90",
-      "active:bg-primary/80",
+      "hover:!bg-primary/90 hover:!text-primary-foreground",
+      "active:!bg-primary/80 active:!text-primary-foreground",
     ],
     !selected && [
       "text-muted-foreground",
-      "hover:bg-primary-subtle hover:text-foreground",
-      "active:bg-primary/15 active:text-foreground",
+      "hover:!bg-primary-subtle hover:!text-muted-foreground",
+      "active:!bg-primary/12 active:!text-muted-foreground",
     ],
   );
 }
 
-/** App Rail 图标按钮 */
+/** App Rail 图标按钮（hover / active 与侧栏 soft 导航项一致） */
 export function appRailButtonClasses(active: boolean) {
   return cn(
     motion,
     focusRing,
     pressable,
     active
-      ? ["bg-primary text-primary-foreground", "hover:bg-primary/90", "active:bg-primary/80"]
+      ? [
+          "bg-primary-soft text-primary",
+          "hover:bg-primary-soft-hover hover:text-primary",
+          "active:bg-primary/15 active:text-primary",
+        ]
       : [
-          "text-muted-foreground",
-          "hover:bg-accent hover:text-foreground",
-          "active:bg-accent/80 active:text-foreground",
+          "text-foreground",
+          "hover:bg-primary/8 dark:hover:bg-white/8",
+          "active:bg-primary/12 dark:active:bg-white/12",
         ],
   );
 }
+
+/** 行内快捷键徽标（如 ⌘F / Ctrl+F） */
+export const shortcutKbdClasses =
+  "inline-flex items-center font-mono text-xs font-semibold leading-none bg-primary/6 border border-primary/10 rounded-md px-2 py-1 tabular-nums";
 
 /** 文本链接按钮（如 ⌘F 搜索） */
 export function textLinkClasses() {
@@ -100,8 +108,8 @@ export function textLinkClasses() {
     motion,
     focusRing,
     pressable,
-    "rounded-sm text-primary font-semibold underline-offset-2",
-    "hover:text-primary/80 hover:underline",
+    "rounded-sm text-primary font-semibold",
+    "hover:text-primary/80",
     "active:text-primary/65",
     disabledState,
   );
@@ -155,11 +163,13 @@ export function accountCardSurfaceClasses(isActive: boolean) {
   );
 }
 
-/** 常用账号药丸外层 */
+/** 常用账号药丸外层（整块可点击跳转） */
 export function favoriteChipClasses(isActive: boolean) {
   return cn(
     motion,
-    "inline-flex items-center gap-1 rounded-full border pl-3 pr-1 py-0.5 text-xs shadow-3xs",
+    focusRing,
+    pressable,
+    "inline-flex min-h-10 max-w-full cursor-pointer items-center gap-0.5 rounded-full border px-1 py-1 text-sm shadow-3xs",
     "bg-white dark:bg-zinc-900 border-slate-200/60 text-slate-700 dark:text-zinc-300",
     "hover:border-primary/25 hover:shadow-2xs hover:-translate-y-0.25",
     "active:translate-y-0 active:shadow-3xs active:border-primary/35",
@@ -167,15 +177,37 @@ export function favoriteChipClasses(isActive: boolean) {
   );
 }
 
-/** 常用账号药丸内复制按钮 */
-export function favoriteChipActionClasses() {
-  return cn(
+/** 常用账号 chip 内图标按钮：默认透明，hover 才显示背景 */
+export function favoriteChipIconClasses(variant: "copy" | "star" | "copied") {
+  const base = cn(
     motion,
     focusRing,
     pressable,
-    "flex items-center gap-1 rounded-md px-1 py-0.5 font-medium",
-    "hover:bg-slate-100/80 dark:hover:bg-zinc-800/80",
-    "active:bg-slate-200/80 dark:active:bg-zinc-700/80",
+    disabledState,
+    "rounded-full bg-transparent shadow-none",
+  );
+
+  if (variant === "copied") {
+    return cn(
+      base,
+      "cursor-default bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400 opacity-100 active:scale-100",
+    );
+  }
+
+  if (variant === "star") {
+    return cn(
+      base,
+      "text-amber-500",
+      "hover:!bg-amber-500/10 hover:!text-amber-600",
+      "active:!bg-amber-500/15 active:!text-amber-700",
+    );
+  }
+
+  return cn(
+    base,
+    "text-muted-foreground",
+    "hover:!bg-primary-soft hover:!text-primary",
+    "active:!bg-primary/15 active:!text-primary",
   );
 }
 

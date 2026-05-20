@@ -15,6 +15,7 @@ type AccountCardProps = {
   isFavorite: boolean;
   isActive?: boolean;
   searchQuery?: string;
+  showCompany?: boolean;
   onToggleFavorite: (accountId: string) => void;
 };
 
@@ -23,6 +24,7 @@ export function AccountCard({
   isFavorite,
   isActive = false,
   searchQuery = "",
+  showCompany = false,
   onToggleFavorite,
 }: AccountCardProps) {
   const [copied, setCopied] = useState(false);
@@ -92,12 +94,14 @@ export function AccountCard({
         </div>
       </div>
 
-      <div className="mt-3 flex max-w-full items-center gap-1.5 rounded-lg border border-slate-100 bg-slate-50/50 dark:border-white/5 dark:bg-white/5 px-2.5 py-1 text-[11px] text-slate-500 dark:text-zinc-400">
-        <Icon icon={Building01Icon} className="size-3 text-slate-400/80 shrink-0" />
-        <span className="truncate">
-          <HighlightText text={account.org} query={searchQuery} />
-        </span>
-      </div>
+      {showCompany && (
+        <div className="mt-3 flex max-w-full items-center gap-1.5 rounded-lg border border-slate-100 bg-slate-50/50 dark:border-white/5 dark:bg-white/5 px-2.5 py-1 text-[11px] text-slate-500 dark:text-zinc-400">
+          <Icon icon={Building01Icon} className="size-3 text-slate-400/80 shrink-0" />
+          <span className="truncate">
+            <HighlightText text={account.org} query={searchQuery} />
+          </span>
+        </div>
+      )}
     </article>
   );
 }

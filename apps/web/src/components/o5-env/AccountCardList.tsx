@@ -5,14 +5,17 @@ import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import type { O5Account } from "@/mocks/o5-env";
 import { filterAccounts } from "@/lib/account-search";
-import { textLinkClasses } from "@/lib/interaction";
+import { textLinkClasses, shortcutKbdClasses } from "@/lib/interaction";
+import { useModShortcut } from "@/lib/keyboard-shortcut";
 import { copyPhone } from "@/lib/copy-phone";
 import { useGridColumns } from "@/hooks/useGridColumns";
 import { resolveGridColumns, useO5GridLayout, type O5GridLayout } from "@/hooks/useO5GridLayout";
 import { useO5Favorites } from "@/hooks/useO5Favorites";
+import { useO5ShowCompany } from "@/hooks/useO5ShowCompany";
 
 import { AccountCard } from "./AccountCard";
 import { AccountLayoutSwitcher } from "./AccountLayoutSwitcher";
+import { AccountShowCompanyToggle } from "./AccountShowCompanyToggle";
 import { AccountSearchBar, type AccountSearchBarHandle } from "./AccountSearchBar";
 import { FavoritesSection } from "./FavoritesSection";
 
@@ -24,6 +27,7 @@ type AccountCardListProps = {
 export function AccountCardList({ accounts, environmentName }: AccountCardListProps) {
   const { isFavorite, toggleFavorite } = useO5Favorites();
   const { layout, setLayout } = useO5GridLayout();
+  const { showCompany, setShowCompany } = useO5ShowCompany();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
@@ -161,6 +165,8 @@ export function AccountCardList({ accounts, environmentName }: AccountCardListPr
           environmentName={environmentName}
           count={0}
           layout={layout}
+          showCompany={showCompany}
+          onShowCompanyChange={setShowCompany}
           onLayoutChange={setLayout}
         />
         <div className="flex min-h-0 flex-1 flex-col items-center justify-center p-8 text-center">
@@ -184,7 +190,9 @@ export function AccountCardList({ accounts, environmentName }: AccountCardListPr
         environmentName={environmentName}
         count={accounts.length}
         layout={layout}
+        showCompany={showCompany}
         searchOpen={searchOpen}
+        onShowCompanyChange={setShowCompany}
         onLayoutChange={setLayout}
         onOpenSearch={() => setSearchOpen(true)}
       />
@@ -209,7 +217,9 @@ export function AccountCardList({ accounts, environmentName }: AccountCardListPr
       />
       <FavoritesSection
         accounts={favoriteAccounts}
+        environmentName={environmentName}
         activeAccountId={activeAccountId}
+        showCompany={showCompany}
         onToggleFavorite={toggleFavorite}
       />
       <div
@@ -248,6 +258,7 @@ export function AccountCardList({ accounts, environmentName }: AccountCardListPr
                 isFavorite={isFavorite(account.id)}
                 isActive={account.id === activeAccountId}
                 searchQuery={searchQuery}
+                showCompany={showCompany}
                 onToggleFavorite={toggleFavorite}
               />
             ))}
@@ -262,17 +273,23 @@ function AccountListHeader({
   environmentName,
   count,
   layout,
+  showCompany,
   searchOpen,
   onLayoutChange,
+  onShowCompanyChange,
   onOpenSearch,
 }: {
   environmentName: string;
   count: number;
   layout: O5GridLayout;
+  showCompany: boolean;
   searchOpen?: boolean;
   onLayoutChange: (layout: O5GridLayout) => void;
+  onShowCompanyChange: (show: boolean) => void;
   onOpenSearch?: () => void;
 }) {
+  const searchShortcut = useModShortcut("f");
+
   return (
     <header className="flex shrink-0 items-center justify-between gap-3 border-b border-neutral-200/40 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md px-6 py-3.5 z-20">
       <div className="min-w-0">
@@ -291,16 +308,16 @@ function AccountListHeader({
             <>
               {" · "}
               <button type="button" className={textLinkClasses()} onClick={onOpenSearch}>
-                <kbd className="font-mono bg-primary/6 border border-primary/10 rounded-md px-1.5 py-0.5 text-[10px]">
-                  ⌘F
-                </kbd>{" "}
-                搜索
+                <kbd className={shortcutKbdClasses}>{searchShortcut}</kbd> 搜索
               </button>
             </>
           )}
         </p>
       </div>
-      <AccountLayoutSwitcher layout={layout} onChange={onLayoutChange} />
+      <div className="flex shrink-0 items-center gap-3">
+        <AccountShowCompanyToggle showCompany={showCompany} onChange={onShowCompanyChange} />
+        <AccountLayoutSwitcher layout={layout} onChange={onLayoutChange} />
+      </div>
     </header>
   );
 }
