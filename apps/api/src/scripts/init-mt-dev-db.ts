@@ -29,7 +29,7 @@ const names = collections.map((c) => c.name).sort();
 console.log(`MongoDB ready: database="${dbName}"`);
 console.log(`Collections: ${names.join(", ") || "(none yet — first write creates them)"}`);
 console.log("Indexes:");
-console.log("  accounts.username — unique");
+console.log("  accounts.key — unique (single pool document)");
 console.log("  systems.name — unique");
 
 process.exit(0);

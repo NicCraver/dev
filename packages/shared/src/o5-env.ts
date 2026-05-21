@@ -27,8 +27,14 @@ export type KvDocument = {
   value: KvValue;
 };
 
-/** mt-dev 库：全局账号池（集合 accounts） */
+/** mt-dev 库：全局账号池条目 */
 export type MtDevAccount = KvAccount;
+
+/** mt-dev 库：accounts 集合单文档，accountList 维护全局账号池 */
+export type MtDevAccountPool = {
+  key: string;
+  accountList: MtDevAccount[];
+};
 
 /** mt-dev 库：系统 + 环境 + 账号引用（集合 systems） */
 export type MtDevSystem = {

@@ -1,10 +1,7 @@
 import type { MtDevAccount, UrlConfig } from "@mt-dev/shared";
 
-const ORGS = [
-  { corpId: "1", name: "天津美腾科技有限公司" },
-  { corpId: "2", name: "北京研发中心" },
-  { corpId: "3", name: "上海交付中心" },
-] as const;
+const MT_CORP = { corpId: "6", name: "天津美腾科技有限公司" } as const;
+const SUB_CORP = { corpId: "1183650868449583106", name: "天津美腾&订阅" } as const;
 
 function mockLoginUrl(port: number): string {
   return `http://localhost:${port}/sso/login`;
@@ -14,39 +11,177 @@ function mockLoginUrl(port: number): string {
 export const SEED_ACCOUNTS: MtDevAccount[] = [
   {
     username: "18822211133",
-    password: "mock-password",
+    password: "zx111222",
     name: "李权泓",
-    corpList: [ORGS[0]],
+    corpList: [MT_CORP],
   },
   {
-    username: "18822211134",
-    password: "mock-password",
+    username: "18899900088",
+    password: "zx111222",
     name: "cs01",
-    corpList: [...ORGS],
+    corpList: [MT_CORP],
   },
   {
-    username: "18822211135",
-    password: "mock-password",
+    username: "18800011122",
+    password: "zx111222",
+    name: "cs02",
+    corpList: [MT_CORP],
+  },
+  {
+    username: "17615834927",
+    password: "zx111222",
+    name: "李峰",
+    corpList: [MT_CORP],
+  },
+  {
+    username: "15583811560",
+    password: "zx111222",
     name: "王梦菲",
-    corpList: [ORGS[1]],
+    corpList: [MT_CORP],
   },
   {
-    username: "13900001000",
-    password: "mock-password",
-    name: "张三",
-    corpList: [ORGS[2]],
+    username: "18611142155",
+    password: "zx111222",
+    name: "韩佳琦",
+    corpList: [MT_CORP],
   },
   {
-    username: "13900001001",
-    password: "mock-password",
-    name: "李四",
-    corpList: [ORGS[0]],
+    username: "18526814685",
+    password: "zx111222",
+    name: "刘馨琪",
+    corpList: [MT_CORP],
   },
   {
-    username: "13700001000",
-    password: "mock-password",
-    name: "赵敏",
-    corpList: [ORGS[1], ORGS[2]],
+    username: "13900000020",
+    password: "zx111222",
+    name: "刘丰k2",
+    corpList: [MT_CORP],
+  },
+  {
+    username: "15822305890",
+    password: "zx111222",
+    name: "李博雅",
+    corpList: [MT_CORP],
+  },
+  {
+    username: "15502280000",
+    password: "zx111222",
+    name: "陈建东",
+    corpList: [MT_CORP],
+  },
+  {
+    username: "15620531519",
+    password: "zx111222",
+    name: "赵彬华",
+    corpList: [MT_CORP],
+  },
+  {
+    username: "18602212392",
+    password: "liu222111",
+    name: "刘义岭",
+    corpList: [MT_CORP],
+  },
+  {
+    username: "15620864523",
+    password: "zx111222",
+    name: "刘晓慧",
+    corpList: [MT_CORP],
+  },
+  {
+    username: "15202285154",
+    password: "zx111222",
+    name: "刘芳",
+    corpList: [MT_CORP],
+  },
+  {
+    username: "13512235881",
+    password: "zx111222",
+    name: "赵健军",
+    corpList: [MT_CORP],
+  },
+  {
+    username: "15318420665",
+    password: "zx111222",
+    name: "王梦菲3",
+    corpList: [MT_CORP],
+  },
+  {
+    username: "15922226045",
+    password: "zx111222",
+    name: "陈丽娜",
+    corpList: [MT_CORP],
+  },
+  {
+    username: "18088880007",
+    password: "ceshi111222",
+    name: "测试账号007",
+    corpList: [MT_CORP],
+  },
+  {
+    username: "18088880009",
+    password: "zx111222",
+    name: "测试账号009",
+    corpList: [MT_CORP],
+  },
+  {
+    username: "13900000017",
+    password: "zx111222",
+    name: "王德臣kk",
+    corpList: [SUB_CORP],
+  },
+  {
+    username: "15700000007",
+    password: "zx111222",
+    name: "开发测试账号07",
+    corpList: [MT_CORP],
+  },
+  {
+    username: "13702116776",
+    password: "zx111222",
+    name: "王德晨",
+    corpList: [MT_CORP],
+  },
+  {
+    username: "15122184000",
+    password: "zx111222",
+    name: "刘云峰",
+    corpList: [MT_CORP],
+  },
+  {
+    username: "15800198630",
+    password: "zx111222",
+    name: "钱广盼",
+    corpList: [MT_CORP],
+  },
+  {
+    username: "15320092121",
+    password: "zx111222",
+    name: "张海峰",
+    corpList: [MT_CORP],
+  },
+  {
+    username: "15620523385",
+    password: "zx111222",
+    name: "李歆楠",
+    corpList: [MT_CORP],
+  },
+  {
+    username: "18920870000",
+    password: "zx111222",
+    name: "秦野",
+    corpList: [MT_CORP],
+  },
+  {
+    username: "13521378691",
+    password: "zx111222",
+    name: "王青改",
+    corpList: [MT_CORP],
+  },
+  {
+    username: "15822860000",
+    password: "zx111222",
+    name: "lalalalala",
+    corpList: [MT_CORP],
   },
 ];
 

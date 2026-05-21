@@ -4,15 +4,13 @@
  */
 import "../load-env.ts";
 
-import { upsertAccount } from "../db/accounts.ts";
+import { setAccountPool } from "../db/accounts.ts";
 import { ensureMongoConnected, getMongoDatabaseName, SystemModel } from "../db/mongo.ts";
 import { SEED_ACCOUNTS, SEED_SYSTEMS } from "../db/seed-data.ts";
 
 await ensureMongoConnected();
 
-for (const account of SEED_ACCOUNTS) {
-  await upsertAccount(account);
-}
+await setAccountPool(SEED_ACCOUNTS);
 
 for (const seed of SEED_SYSTEMS) {
   await SystemModel.findOneAndUpdate(
@@ -31,7 +29,7 @@ const accountCount = SEED_ACCOUNTS.length;
 const systemCount = SEED_SYSTEMS.length;
 
 console.log(`Seeded database="${dbName}"`);
-console.log(`  accounts: ${accountCount}`);
+console.log(`  accounts: 1 pool document, ${accountCount} entries`);
 console.log(`  systems: ${systemCount} (${SEED_SYSTEMS.map((s) => s.name).join(", ")})`);
 
 process.exit(0);

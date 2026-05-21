@@ -19,12 +19,23 @@ const urlConfigSchema = new Schema(
   { _id: false },
 );
 
-const accountSchema = new Schema({
-  username: { type: String, required: true, unique: true },
-  password: String,
-  name: String,
-  corpList: [corpSchema],
+const accountEntrySchema = new Schema(
+  {
+    username: { type: String, required: true },
+    password: String,
+    name: String,
+    corpList: [corpSchema],
+  },
+  { _id: false },
+);
+
+/** accounts 集合仅一条文档，accountList 为全局账号池 */
+const accountPoolSchema = new Schema({
+  key: { type: String, required: true, unique: true, default: "pool" },
+  accountList: [accountEntrySchema],
 });
+
+export const ACCOUNT_POOL_KEY = "pool";
 
 const systemSchema = new Schema({
   name: { type: String, required: true, unique: true },
@@ -38,7 +49,7 @@ const kvSchema = new Schema({
   value: Object,
 });
 
-export const AccountModel = mongoose.models.Account ?? mongoose.model("Account", accountSchema);
+export const AccountModel = mongoose.models.Account ?? mongoose.model("Account", accountPoolSchema);
 
 export const SystemModel = mongoose.models.System ?? mongoose.model("System", systemSchema);
 

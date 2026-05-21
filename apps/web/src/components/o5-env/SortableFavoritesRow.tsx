@@ -43,6 +43,7 @@ export function SortableFavoritesRow({ accounts, renderChip }: SortableFavorites
             key={account.id}
             id={account.id}
             isOverlaySource={account.id === activeId}
+            layoutEnabled={activeId !== null}
             renderChip={renderChip}
             account={account}
           />
@@ -56,11 +57,13 @@ function SortableFavoriteCell({
   id,
   account,
   isOverlaySource,
+  layoutEnabled,
   renderChip,
 }: {
   id: string;
   account: O5Account;
   isOverlaySource: boolean;
+  layoutEnabled: boolean;
   renderChip: SortableFavoritesRowProps["renderChip"];
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -82,7 +85,8 @@ function SortableFavoriteCell({
 
   return (
     <motion.div
-      layout="position"
+      layout={layoutEnabled ? "position" : false}
+      initial={false}
       transition={{ type: "spring", stiffness: 520, damping: 36 }}
       className={cn(isOverlaySource && "opacity-40")}
     >

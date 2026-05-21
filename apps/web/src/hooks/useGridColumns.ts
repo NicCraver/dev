@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useLayoutEffect, useState } from "react";
 
 function columnsForWidth(width: number): number {
   if (width >= 900) return 3;
@@ -7,9 +7,11 @@ function columnsForWidth(width: number): number {
 }
 
 export function useGridColumns(element: HTMLElement | null): number {
-  const [columns, setColumns] = useState(3);
+  const [columns, setColumns] = useState(() =>
+    element ? columnsForWidth(element.getBoundingClientRect().width) : 2,
+  );
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!element) return;
 
     const update = (width: number) => setColumns(columnsForWidth(width));

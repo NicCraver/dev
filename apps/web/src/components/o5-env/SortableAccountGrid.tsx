@@ -41,6 +41,7 @@ export function SortableAccountGrid({ accounts, columns, renderCard }: SortableA
             key={account.id}
             id={account.id}
             isOverlaySource={account.id === activeId}
+            layoutEnabled={activeId !== null}
           >
             {renderCard(account, { isDragging: account.id === activeId })}
           </SortableAccountCell>
@@ -53,10 +54,12 @@ export function SortableAccountGrid({ accounts, columns, renderCard }: SortableA
 function SortableAccountCell({
   id,
   isOverlaySource,
+  layoutEnabled,
   children,
 }: {
   id: string;
   isOverlaySource: boolean;
+  layoutEnabled: boolean;
   children: ReactNode;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -81,7 +84,11 @@ function SortableAccountCell({
       {...listeners}
       title="按住拖动排序"
     >
-      <motion.div layout="position" transition={{ type: "spring", stiffness: 500, damping: 38 }}>
+      <motion.div
+        layout={layoutEnabled ? "position" : false}
+        initial={false}
+        transition={{ type: "spring", stiffness: 500, damping: 38 }}
+      >
         {children}
       </motion.div>
     </div>
