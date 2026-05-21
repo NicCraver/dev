@@ -1,7 +1,6 @@
 import type { O5EnvBootstrapResponse, O5SystemDto } from "@mt-dev/shared";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { o5AccountsByEnv, o5Environments, o5Systems } from "@/mocks/o5-env";
 import type { O5Account, O5Environment, O5System } from "@/types/o5-env";
 
 const CACHE_KEY = "o5-env-cache";
@@ -55,34 +54,6 @@ function mapDtoToView(dto: O5SystemDto): {
   };
 }
 
-function buildMockBootstrap(): O5SystemDto[] {
-  return o5Systems.map((system) => {
-    const envs = o5Environments.filter((e) => e.systemId === system.id);
-    const accountMap = new Map<string, O5Account>();
-
-    for (const env of envs) {
-      const accounts = o5AccountsByEnv[env.id] ?? [];
-      for (const account of accounts) {
-        if (!accountMap.has(account.username)) {
-          accountMap.set(account.username, account);
-        }
-      }
-    }
-
-    return {
-      id: system.id,
-      name: system.name,
-      environments: envs.map((env) => ({
-        id: env.id,
-        name: env.name,
-        url: env.url,
-        features: env.features,
-      })),
-      accounts: [...accountMap.values()],
-    };
-  });
-}
-
 export function useO5EnvData() {
   const [systems, setSystems] = useState<O5System[]>([]);
   const [environmentsBySystem, setEnvironmentsBySystem] = useState<Record<string, O5Environment[]>>(
@@ -91,7 +62,6 @@ export function useO5EnvData() {
   const [accountsBySystem, setAccountsBySystem] = useState<Record<string, O5Account[]>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [usingMock, setUsingMock] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -100,34 +70,24 @@ export function useO5EnvData() {
     try {
       const res = await fetch("/api/o5-env/bootstrap");
       if (res.status === 503) {
-        if (import.meta.env.DEV) {
-          const mock = buildMockBootstrap();
-          applyBootstrap(mock, true);
-          return;
-        }
         throw new Error("MongoDB 未配置，无法加载环境数据");
       }
       if (!res.ok) {
         throw new Error(`加载失败 (${res.status})`);
       }
       const body = (await res.json()) as O5EnvBootstrapResponse;
-      applyBootstrap(body.systems, false);
+      applyBootstrap(body.systems);
     } catch (err) {
       const message = err instanceof Error ? err.message : "加载失败";
-      if (import.meta.env.DEV) {
-        applyBootstrap(buildMockBootstrap(), true);
-        setError(`${message}（已回退 mock）`);
-      } else {
-        setError(message);
-        setSystems([]);
-        setEnvironmentsBySystem({});
-        setAccountsBySystem({});
-      }
+      setError(message);
+      setSystems([]);
+      setEnvironmentsBySystem({});
+      setAccountsBySystem({});
     } finally {
       setLoading(false);
     }
 
-    function applyBootstrap(dtos: O5SystemDto[], mock: boolean) {
+    function applyBootstrap(dtos: O5SystemDto[]) {
       const nextSystems: O5System[] = [];
       const nextEnvs: Record<string, O5Environment[]> = {};
       const nextAccounts: Record<string, O5Account[]> = {};
@@ -149,7 +109,6 @@ export function useO5EnvData() {
       setSystems(nextSystems);
       setEnvironmentsBySystem(nextEnvs);
       setAccountsBySystem(nextAccounts);
-      setUsingMock(mock);
     }
   }, []);
 
@@ -189,8 +148,7 @@ export function useO5EnvData() {
     accountsBySystem,
     loading,
     error,
-    usingMock,
-    writable: !usingMock && systems.length > 0,
+    writable: systems.length > 0,
     refetch: load,
     persistSelection,
     resolveInitialEnvId,

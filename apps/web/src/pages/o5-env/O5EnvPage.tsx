@@ -17,7 +17,6 @@ export function O5EnvPage() {
     accountsBySystem,
     loading,
     error,
-    usingMock,
     writable,
     refetch,
     persistSelection,
@@ -130,12 +129,6 @@ export function O5EnvPage() {
 
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-white">
-      {error && (
-        <p className="shrink-0 border-b border-amber-200/60 bg-amber-50 px-4 py-1.5 text-xs text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200">
-          {error}
-          {usingMock ? " · 使用本地 mock 数据" : ""}
-        </p>
-      )}
       <ResizablePanelGroup
         id="o5-env-main"
         className="h-full min-h-0 flex-1"

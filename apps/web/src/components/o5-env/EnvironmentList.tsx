@@ -1,4 +1,5 @@
 import { Add01Icon } from "@hugeicons/core-free-icons";
+import { AnimatePresence, LayoutGroup, motion } from "motion/react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -68,26 +69,40 @@ export function EnvironmentList({
         aria-labelledby="o5-env-list-heading"
         role="region"
       >
-        {environments.length === 0 ? (
-          <p className="text-muted-foreground/55 px-4 py-8 text-center text-xs italic">暂无环境</p>
-        ) : (
-          <SortableSidebarNavList
-            items={environments}
-            listClassName="flex flex-col gap-0.5 px-2 pb-2"
-            onReorder={onReorder}
-            renderItem={(env, sortable) => (
-              <SidebarNavItem
-                appearance="soft"
-                selected={env.id === selectedId}
-                sortable={sortable}
-                onClick={() => onSelect(env.id)}
-                labelClassName="text-slate-700"
-              >
-                {env.name}
-              </SidebarNavItem>
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={systemKvId ?? "__none__"}
+            initial={{ opacity: 0, x: 4 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -4 }}
+            transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+          >
+            {environments.length === 0 ? (
+              <p className="text-muted-foreground/55 px-4 py-8 text-center text-xs italic">
+                暂无环境
+              </p>
+            ) : (
+              <LayoutGroup id="o5-env-nav">
+                <SortableSidebarNavList
+                  items={environments}
+                  listClassName="flex flex-col gap-0.5 px-2 pb-2"
+                  onReorder={onReorder}
+                  renderItem={(env, sortable) => (
+                    <SidebarNavItem
+                      appearance="soft"
+                      selected={env.id === selectedId}
+                      selectionLayoutId="o5-env-nav"
+                      sortable={sortable}
+                      onClick={() => onSelect(env.id)}
+                    >
+                      {env.name}
+                    </SidebarNavItem>
+                  )}
+                />
+              </LayoutGroup>
             )}
-          />
-        )}
+          </motion.div>
+        </AnimatePresence>
       </div>
 
       {systemKvId && (

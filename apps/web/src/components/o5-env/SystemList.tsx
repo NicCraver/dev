@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge";
+import { LayoutGroup } from "motion/react";
 import type { O5System } from "@/types/o5-env";
 import { cn } from "@/lib/utils";
 
@@ -26,36 +27,39 @@ export function SystemList({ systems, selectedId, onSelect, onReorder }: SystemL
         </span>
       </h2>
       <div className="scrollbar-thin min-h-0 flex-1 overflow-y-auto overscroll-y-contain">
-        <SortableSidebarNavList
-          items={systems}
-          listClassName="flex flex-col gap-0.5 px-2 pb-2"
-          onReorder={onReorder}
-          renderItem={(system, sortable) => {
-            const isSelected = system.id === selectedId;
-            return (
-              <SidebarNavItem
-                appearance="soft"
-                selected={isSelected}
-                sortable={sortable}
-                onClick={() => onSelect(system.id)}
-                trailing={
-                  <Badge
-                    variant="outline"
-                    className={cn(
-                      "tabular-nums border-primary/10 bg-white/40 px-1.5 py-0 text-[10px] text-primary/85 font-medium tracking-tight",
-                      isSelected &&
-                        "border-primary/25 bg-white text-primary font-semibold shadow-2xs",
-                    )}
-                  >
-                    {system.count}
-                  </Badge>
-                }
-              >
-                {system.name}
-              </SidebarNavItem>
-            );
-          }}
-        />
+        <LayoutGroup id="o5-system-nav">
+          <SortableSidebarNavList
+            items={systems}
+            listClassName="flex flex-col gap-0.5 px-2 pb-2"
+            onReorder={onReorder}
+            renderItem={(system, sortable) => {
+              const isSelected = system.id === selectedId;
+              return (
+                <SidebarNavItem
+                  appearance="soft"
+                  selected={isSelected}
+                  selectionLayoutId="o5-system-nav"
+                  sortable={sortable}
+                  onClick={() => onSelect(system.id)}
+                  trailing={
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        "tabular-nums border-primary/10 bg-white/40 px-1.5 py-0 text-[10px] text-primary/85 font-medium tracking-tight",
+                        isSelected &&
+                          "border-primary/25 bg-white text-primary font-semibold shadow-2xs",
+                      )}
+                    >
+                      {system.count}
+                    </Badge>
+                  }
+                >
+                  {system.name}
+                </SidebarNavItem>
+              );
+            }}
+          />
+        </LayoutGroup>
       </div>
     </section>
   );
