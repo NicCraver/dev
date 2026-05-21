@@ -1,5 +1,5 @@
 import type { DevDashModuleId } from "@mt-dev/shared";
-import { Mail01Icon, RobotIcon, UserGroupIcon, WrenchIcon } from "@hugeicons/core-free-icons";
+import { Mail01Icon, RobotIcon, Layers01Icon, WrenchIcon } from "@hugeicons/core-free-icons";
 import { createElement, type ComponentType } from "react";
 
 import type { IconSvgElement } from "@/components/ui/icon";
@@ -22,7 +22,7 @@ export const modules: DevDashModule[] = [
     label: "O5 env",
     routePath: "o5-env",
     navPath: "/o5-env",
-    icon: UserGroupIcon,
+    icon: Layers01Icon,
     page: O5EnvPage,
   },
   {

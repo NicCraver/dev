@@ -154,9 +154,9 @@ export function iconGhostClasses(variant: "neutral" | "amber" | "primary" | "dan
 /** 账号卡片容器（悬停抬升；内部按钮独立交互） */
 export function accountCardSurfaceClasses(isActive: boolean) {
   return cn(
-    "relative overflow-hidden bg-card rounded-xl border border-neutral-200/50 py-4",
+    "relative overflow-hidden bg-card rounded-xl border border-primary/20 py-4",
     motion,
-    "hover:-translate-y-0.5 hover:shadow-md hover:border-primary/20",
+    "hover:-translate-y-0.5 hover:shadow-md hover:border-primary/35",
     isActive
       ? "border-primary/45 shadow-[0_4px_20px_rgba(52,110,238,0.12)] bg-gradient-to-r from-primary/2 to-transparent"
       : "shadow-[0_2px_8px_-2px_rgba(0,0,0,0.03),0_1px_3px_-1px_rgba(0,0,0,0.02)]",
@@ -169,10 +169,10 @@ export function favoriteChipClasses(isActive: boolean) {
     motion,
     focusRing,
     pressable,
-    "inline-flex min-h-10 max-w-full cursor-pointer items-center gap-0.5 rounded-full border px-1 py-1 text-sm shadow-3xs",
-    "bg-white dark:bg-zinc-900 border-slate-200/60 text-slate-700 dark:text-zinc-300",
-    "hover:border-primary/25 hover:shadow-2xs hover:-translate-y-0.25",
-    "active:translate-y-0 active:shadow-3xs active:border-primary/35",
+    "inline-flex min-h-6 min-w-[6rem] max-w-full cursor-pointer items-center gap-0.5 rounded-3xl border px-1.5 py-.5 text-base shadow-3xs",
+    "bg-white dark:bg-zinc-900 border-primary/20 text-slate-700 dark:text-zinc-300",
+    "hover:border-primary/35 hover:shadow-2xs hover:-translate-y-0.25",
+    "active:translate-y-0 active:shadow-3xs active:border-primary/45",
     isActive && "border-primary ring-2 ring-primary/15 bg-primary/2",
   );
 }

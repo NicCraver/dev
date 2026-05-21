@@ -15,6 +15,8 @@ export type FavoriteSortableProps = {
   attributes: DraggableAttributes;
   listeners: SyntheticListenerMap | undefined;
   isDragging: boolean;
+  /** 当前有任意 chip 正在被拖拽（包括自身） */
+  anyDragging: boolean;
 };
 
 type SortableFavoritesRowProps = {
@@ -81,6 +83,7 @@ function SortableFavoriteCell({
     attributes,
     listeners,
     isDragging: isDragging || isOverlaySource,
+    anyDragging: layoutEnabled,
   };
 
   return (

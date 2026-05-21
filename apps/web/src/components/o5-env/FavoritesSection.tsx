@@ -135,6 +135,7 @@ export function FavoriteChip({
       {...sortable?.listeners}
       className={cn(
         favoriteChipClasses(isActive),
+        "group/chip",
         sortable && "touch-none select-none cursor-grab active:cursor-grabbing",
         sortable?.isDragging && "opacity-35 shadow-lg ring-2 ring-amber-400/40",
       )}
@@ -147,7 +148,7 @@ export function FavoriteChip({
       onKeyDown={handleKeyDown}
     >
       <span
-        className="min-w-0 flex-1 truncate px-2.5 py-1.5 font-semibold"
+        className="min-w-0 flex-1 truncate px-3 py-2 text-center font-semibold"
         title={
           showCompany && defaultCorp
             ? `${account.name} · ${accountOrgLabel(account)}`
@@ -159,7 +160,16 @@ export function FavoriteChip({
           <span className="text-slate-400/80 font-normal"> · {accountOrgLabel(account)}</span>
         )}
       </span>
-      <div className="flex shrink-0 items-center gap-0.5">
+      <div
+        className={cn(
+          "flex shrink-0 items-center gap-0.5 overflow-hidden transition-all duration-150",
+          sortable?.anyDragging
+            ? "w-0 opacity-0"
+            : copied
+              ? "w-17 opacity-100"
+              : "w-0 opacity-0 group-hover/chip:w-17 group-hover/chip:opacity-100",
+        )}
+      >
         <Button
           type="button"
           variant="ghost"
