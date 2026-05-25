@@ -100,3 +100,11 @@ export type AddLinkRequest = {
   url: string;
   note?: string;
 };
+
+export type UpdateLinkRequest = {
+  kvId: string;
+  envIndex: number;
+  url: string;
+  note?: string;
+  features?: string;
+};

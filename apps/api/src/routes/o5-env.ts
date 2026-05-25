@@ -5,6 +5,7 @@ import type {
   O5SystemDto,
   ShareNewRequest,
   ShareNewResponse,
+  UpdateLinkRequest,
   UrlConfig,
 } from "@mt-dev/shared";
 import type { Hono } from "hono";
@@ -16,6 +17,7 @@ import {
   addUserToSystem,
   createSystem,
   listSystemsWithAccounts,
+  updateLinkInSystem,
 } from "../db/systems.ts";
 
 type RecommendItem = { url: string; note?: string; [key: string]: unknown };
@@ -168,6 +170,62 @@ export function registerO5EnvRoutes(app: Hono) {
       }
 
       return c.json({ success: false, message: "Failed to add user", error: message }, 500);
+    }
+  });
+
+  app.post("/api/link/update", async (c) => {
+    if (!isMongoConfigured) return mongoUnavailable(c);
+
+    try {
+      const body = (await c.req.json()) as UpdateLinkRequest;
+      const { kvId, envIndex, url, note, features } = body;
+
+      if (!kvId) {
+        return c.json(
+          {
+            success: false,
+            message: "kvId is required (system document ID or name)",
+          },
+          400,
+        );
+      }
+      if (typeof envIndex !== "number" || envIndex < 0) {
+        return c.json({ success: false, message: "envIndex must be a non-negative number" }, 400);
+      }
+      if (!url) {
+        return c.json({ success: false, message: "url is required" }, 400);
+      }
+
+      const updated = await updateLinkInSystem(kvId, envIndex, {
+        url,
+        note: note ?? "",
+        features,
+      });
+
+      return c.json(
+        {
+          success: true,
+          message: "Link updated in system urlList",
+          data: {
+            kvId: updated._id.toString(),
+            alias: updated.name,
+            urlListCount: updated.urlList?.length ?? 0,
+          },
+        },
+        200,
+      );
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown error";
+      console.error("link/update error:", error);
+
+      if (message === "System not found") {
+        return c.json({ success: false, message }, 404);
+      }
+      if (message === "Environment index out of range") {
+        return c.json({ success: false, message }, 400);
+      }
+
+      return c.json({ success: false, message: "Failed to update link", error: message }, 500);
     }
   });
 

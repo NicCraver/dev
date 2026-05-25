@@ -1,4 +1,4 @@
-import type { AddLinkRequest, AddUserRequest, Corp } from "@mt-dev/shared";
+import type { AddLinkRequest, AddUserRequest, Corp, UpdateLinkRequest } from "@mt-dev/shared";
 
 type ApiErrorBody = {
   success?: boolean;
@@ -27,6 +27,25 @@ export async function addUserToEnv(body: AddUserRequest): Promise<void> {
 
 export async function addLinkToEnv(body: AddLinkRequest): Promise<void> {
   const res = await fetch("/api/link/add", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    throw new Error(await parseError(res));
+  }
+}
+
+export function parseEnvIndex(envId: string): number {
+  const match = envId.match(/-env-(\d+)$/);
+  if (!match) {
+    throw new Error(`无效的环境 ID：${envId}`);
+  }
+  return Number(match[1]);
+}
+
+export async function updateLinkInEnv(body: UpdateLinkRequest): Promise<void> {
+  const res = await fetch("/api/link/update", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),

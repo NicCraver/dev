@@ -68,6 +68,31 @@ export async function addLinkToSystem(
   return system.save();
 }
 
+export async function updateLinkInSystem(
+  systemId: string,
+  envIndex: number,
+  link: { url: string; note: string; features?: string },
+): Promise<SystemDoc> {
+  const system = await findSystem(systemId);
+  if (!system) {
+    throw new Error("System not found");
+  }
+
+  const urlList = system.urlList ?? [];
+  if (envIndex < 0 || envIndex >= urlList.length) {
+    throw new Error("Environment index out of range");
+  }
+
+  urlList[envIndex] = {
+    url: link.url,
+    note: link.note,
+    ...(link.features !== undefined ? { features: link.features } : {}),
+  };
+  system.urlList = urlList;
+  system.markModified("urlList");
+  return system.save();
+}
+
 export async function linkAccountToSystem(systemId: string, username: string): Promise<SystemDoc> {
   const system = await findSystem(systemId);
   if (!system) {

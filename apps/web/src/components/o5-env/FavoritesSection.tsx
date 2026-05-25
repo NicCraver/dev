@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { openAccountJump } from "@/lib/account-jump";
 import { copyPhone } from "@/lib/copy-phone";
-import { favoriteChipClasses, favoriteChipIconClasses } from "@/lib/interaction";
+import { favoriteChipClasses, favoriteChipIconClasses, focusRing } from "@/lib/interaction";
 import { accountOrgLabel, accountPhone, type O5Account } from "@/types/o5-env";
 import { cn } from "@/lib/utils";
 
@@ -135,71 +135,73 @@ export function FavoriteChip({
       {...sortable?.listeners}
       className={cn(
         favoriteChipClasses(isActive),
-        "group/chip",
         sortable && "touch-none select-none cursor-grab active:cursor-grabbing",
         sortable?.isDragging && "opacity-35 shadow-lg ring-2 ring-amber-400/40",
       )}
       data-account-id={account.id}
-      role="button"
-      tabIndex={0}
-      aria-label={`打开 ${account.name} 的登录页`}
       title={sortable ? "按住拖动排序" : undefined}
-      onClick={(event) => jumpEnabled && handleOpen(event)}
-      onKeyDown={handleKeyDown}
     >
-      <span
-        className="min-w-0 flex-1 truncate px-3 py-2 text-center font-semibold"
-        title={
-          showCompany && defaultCorp
-            ? `${account.name} · ${accountOrgLabel(account)}`
-            : account.name
-        }
-      >
-        {account.name}
-        {showCompany && defaultCorp && (
-          <span className="text-slate-400/80 font-normal"> · {accountOrgLabel(account)}</span>
-        )}
-      </span>
-      <div
+      <button
+        type="button"
         className={cn(
-          "flex shrink-0 items-center gap-0.5 overflow-hidden transition-all duration-150",
-          sortable?.anyDragging
-            ? "w-0 opacity-0"
-            : copied
-              ? "w-17 opacity-100"
-              : "w-0 opacity-0 group-hover/chip:w-17 group-hover/chip:opacity-100",
+          focusRing,
+          "min-w-0 flex-1 truncate rounded-3xl border-0 bg-transparent pl-3 pr-1 py-2 text-left font-semibold",
+          jumpEnabled ? "cursor-pointer" : "cursor-default",
         )}
+        aria-label={`打开 ${account.name} 的登录页`}
+        disabled={!jumpEnabled || !defaultCorp}
+        onClick={(event) => jumpEnabled && handleOpen(event)}
+        onKeyDown={handleKeyDown}
       >
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          disabled={copied}
-          className={cn(
-            "h-8 w-8 shrink-0 rounded-full p-0",
-            favoriteChipIconClasses(copied ? "copied" : "copy"),
-          )}
-          aria-label={copied ? `已复制 ${account.name} 的手机号` : `复制 ${account.name} 的手机号`}
-          onClick={(event) => void handleCopy(event)}
+        <span
+          className="block truncate"
+          title={
+            showCompany && defaultCorp
+              ? `${account.name} · ${accountOrgLabel(account)}`
+              : account.name
+          }
         >
-          {copied ? (
-            <Icon icon={Tick01Icon} className="size-3.5 animate-in fade-in zoom-in duration-200" />
-          ) : (
-            <Icon icon={Copy01Icon} className="size-3.5" />
+          {account.name}
+          {showCompany && defaultCorp && (
+            <span className="text-slate-400/80 font-normal"> · {accountOrgLabel(account)}</span>
           )}
-        </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className={cn("h-8 w-8 shrink-0 rounded-full p-0", favoriteChipIconClasses("star"))}
-          aria-label={`取消收藏 ${account.name}`}
-          aria-pressed
-          onClick={handleToggleFavorite}
-        >
-          <Icon icon={StarIcon} className="size-3.5 fill-current" />
-        </Button>
-      </div>
+        </span>
+      </button>
+      {!sortable?.anyDragging && (
+        <div className="flex shrink-0 items-center pr-0.5">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            disabled={copied}
+            className={cn(
+              "size-6 shrink-0 rounded-full p-0",
+              favoriteChipIconClasses(copied ? "copied" : "copy"),
+            )}
+            aria-label={
+              copied ? `已复制 ${account.name} 的手机号` : `复制 ${account.name} 的手机号`
+            }
+            onClick={(event) => void handleCopy(event)}
+          >
+            {copied ? (
+              <Icon icon={Tick01Icon} className="size-3 animate-in fade-in zoom-in duration-200" />
+            ) : (
+              <Icon icon={Copy01Icon} className="size-3" />
+            )}
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className={cn("size-6 shrink-0 rounded-full p-0", favoriteChipIconClasses("star"))}
+            aria-label={`取消收藏 ${account.name}`}
+            aria-pressed
+            onClick={handleToggleFavorite}
+          >
+            <Icon icon={StarIcon} className="size-3 fill-current" />
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
