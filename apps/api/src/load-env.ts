@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 
 const apiRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
-function loadEnvFile(filePath: string): void {
+function loadEnvFile(filePath: string, override = false): void {
   if (!existsSync(filePath)) return;
 
   const content = readFileSync(filePath, "utf8");
@@ -24,12 +24,12 @@ function loadEnvFile(filePath: string): void {
       value = value.slice(1, -1);
     }
 
-    if (process.env[key] === undefined) {
+    if (override || process.env[key] === undefined) {
       process.env[key] = value;
     }
   }
 }
 
-/** 先 example 再 .env，便于本地 dev 无需手动复制即可连 Mongo */
+/** 先 example 再 .env（.env 覆盖 example，便于本地 dev 无需手动复制即可连 Mongo） */
 loadEnvFile(resolve(apiRoot, ".env.example"));
-loadEnvFile(resolve(apiRoot, ".env"));
+loadEnvFile(resolve(apiRoot, ".env"), true);

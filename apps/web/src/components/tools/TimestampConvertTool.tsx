@@ -10,6 +10,7 @@ import {
   formatUtcIso,
   parseTimestampInput,
 } from "@/lib/timestamp-parse";
+import { randomId } from "@/lib/random-id";
 import { cn } from "@/lib/utils";
 
 import { TimezonePicker } from "./TimezonePicker";
@@ -20,7 +21,7 @@ type TimestampRow = {
 };
 
 function createRow(input = ""): TimestampRow {
-  return { id: crypto.randomUUID(), input };
+  return { id: randomId(), input };
 }
 
 const INITIAL_ROWS: TimestampRow[] = [

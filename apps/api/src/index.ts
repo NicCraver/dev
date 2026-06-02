@@ -6,6 +6,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 
 import { registerO5EnvRoutes } from "./routes/o5-env.ts";
+import { registerPm2Routes } from "./routes/pm2.ts";
 
 const PORT = Number(process.env.PORT ?? 6333);
 
@@ -14,7 +15,13 @@ const app = new Hono();
 app.use(
   "*",
   cors({
-    origin: ["http://localhost:6111", "https://env.nextdev.cc"],
+    origin: [
+      "http://localhost:6111",
+      "https://env.nextdev.cc",
+      "http://env.lif3ng.cn",
+      "https://env.lif3ng.cn",
+      "http://env.nextdev.cc",
+    ],
   }),
 );
 
@@ -24,6 +31,7 @@ app.get("/api/health", (c) => {
 });
 
 registerO5EnvRoutes(app);
+registerPm2Routes(app);
 
 serve(
   {

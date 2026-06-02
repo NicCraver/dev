@@ -1,0 +1,12 @@
+node_modules
+**/node_modules
+.git
+.env.deploy
+.env.deploy.ssh
+apps/api/.env
+apps/web/dist
+**/.vite
+**/dist
+*.md
+docs
+.cursor

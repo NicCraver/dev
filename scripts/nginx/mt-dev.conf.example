@@ -1,0 +1,36 @@
+# env.nextdev.cc — HTTP 静态 Web + 反代 API（无 SSL）
+# sudo cp mt-dev.conf.example /etc/nginx/conf.d/mt-dev.conf && sudo nginx -t && sudo nginx -s reload
+#
+# 旧地址 :51611 跳转需先释放端口：pm2 stop mt-dev-web && pm2 save
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name env.nextdev.cc;
+
+    root /home/lifeng/mt-dev/apps/web/dist;
+    index index.html;
+
+    location /api/ {
+        proxy_pass http://127.0.0.1:6333;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_buffering off;
+        proxy_read_timeout 86400s;
+    }
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
+
+# 可选：http://192.168.5.46:51611 → http://env.nextdev.cc/
+server {
+    listen 51611;
+    listen [::]:51611;
+    server_name _;
+    return 301 http://env.nextdev.cc$request_uri;
+}

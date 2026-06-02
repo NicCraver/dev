@@ -1,10 +1,17 @@
 import type { DevDashModuleId } from "@mt-dev/shared";
-import { Mail01Icon, RobotIcon, Layers01Icon, WrenchIcon } from "@hugeicons/core-free-icons";
+import {
+  ComputerIcon,
+  Mail01Icon,
+  RobotIcon,
+  Layers01Icon,
+  WrenchIcon,
+} from "@hugeicons/core-free-icons";
 import { createElement, type ComponentType } from "react";
 
 import type { IconSvgElement } from "@/components/ui/icon";
 import { ComingSoon } from "@/pages/ComingSoon";
 import { O5EnvPage } from "@/pages/o5-env/O5EnvPage";
+import { Pm2Page } from "@/pages/pm2/Pm2Page";
 import { ToolsPage } from "@/pages/tools/ToolsPage";
 
 export type DevDashModule = {
@@ -40,6 +47,14 @@ export const modules: DevDashModule[] = [
     navPath: "/aichat-env",
     icon: RobotIcon,
     page: () => createElement(ComingSoon, { title: "aichat env" }),
+  },
+  {
+    id: "pm2",
+    label: "PM2",
+    routePath: "pm2",
+    navPath: "/pm2",
+    icon: ComputerIcon,
+    page: Pm2Page,
   },
   {
     id: "tools",

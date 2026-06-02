@@ -1,0 +1,30 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    image: mt-dev-api:latest
+    env_file:
+      - apps/api/.env
+    environment:
+      PM2_ENABLED: "${PM2_ENABLED:-true}"
+      PORT: "6333"
+      HOME: "${DEPLOY_HOME:-/home/lifeng}"
+    network_mode: host
+    user: "${DEPLOY_UID:-1000}:${DEPLOY_GID:-1000}"
+    volumes:
+      - "${DEPLOY_PM2_HOME:-/home/lifeng/.pm2}:${DEPLOY_HOME:-/home/lifeng}/.pm2"
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    image: mt-dev-web:latest
+    ports:
+      - "${DEPLOY_WEB_PORT:-51611}:80"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - api
+    restart: unless-stopped

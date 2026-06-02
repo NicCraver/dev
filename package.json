@@ -9,6 +9,10 @@
     "dev:api": "pnpm --filter @mt-dev/api dev",
     "build": "pnpm -r run build",
     "check": "pnpm -r run check",
+    "deploy": "bash scripts/deploy-fast.sh",
+    "deploy:fast": "bash scripts/deploy-fast.sh",
+    "deploy:docker": "bash scripts/deploy-docker.sh",
+    "hooks:install": "bash scripts/install-githooks.sh",
     "prepare": "vp config"
   },
   "devDependencies": {

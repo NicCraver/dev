@@ -60,7 +60,8 @@ export function AccountCard({
 
   const handleCopy = async (event: MouseEvent) => {
     event.stopPropagation();
-    await copyPhone(accountPhone(account));
+    const ok = await copyPhone(accountPhone(account));
+    if (!ok) return;
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1500);
   };

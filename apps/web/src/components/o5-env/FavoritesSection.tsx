@@ -110,7 +110,8 @@ export function FavoriteChip({
 
   const handleCopy = async (event: MouseEvent) => {
     event.stopPropagation();
-    await copyPhone(accountPhone(account));
+    const ok = await copyPhone(accountPhone(account));
+    if (!ok) return;
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1500);
   };
@@ -120,7 +121,7 @@ export function FavoriteChip({
     onToggleFavorite(account.id);
   };
 
-  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+  const handleKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
       handleOpen(event);

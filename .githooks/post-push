@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# push 到 origin/main 后自动部署（需先 pnpm hooks:install）
+set -euo pipefail
+
+ROOT="$(git rev-parse --show-toplevel)"
+cd "$ROOT"
+
+if [[ "${MT_DEV_SKIP_DEPLOY:-}" == "1" ]]; then
+  echo "mt-dev: 跳过自动部署（MT_DEV_SKIP_DEPLOY=1）"
+  exit 0
+fi
+
+if [[ ! -f .env.deploy.ssh ]]; then
+  echo "mt-dev: 未找到 .env.deploy.ssh，跳过自动部署"
+  exit 0
+fi
+
+remote_name="${1:-origin}"
+if [[ "$remote_name" != "origin" ]]; then
+  echo "mt-dev: 非 origin push，跳过自动部署"
+  exit 0
+fi
+
+should_deploy=false
+while read -r local_ref local_sha remote_ref remote_sha; do
+  if [[ "$remote_ref" =~ ^refs/heads/(main|master)$ ]]; then
+    should_deploy=true
+    break
+  fi
+done
+
+if [[ "$should_deploy" == true ]]; then
+  echo ""
+  echo "==> mt-dev: push 到 origin/main，开始自动部署..."
+  bash "$ROOT/scripts/deploy-fast.sh"
+else
+  echo "mt-dev: 非 main/master push，跳过自动部署"
+fi
