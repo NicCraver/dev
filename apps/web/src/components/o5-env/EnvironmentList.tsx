@@ -7,6 +7,7 @@ import { Icon } from "@/components/ui/icon";
 import { cn } from "@/lib/utils";
 import type { O5Environment } from "@/types/o5-env";
 
+import { o5SectionHeaderHintClasses, o5SectionHeaderMutedClasses } from "./o5-section-header";
 import { AddLinkDialog } from "./AddLinkDialog";
 import { EditLinkDialog } from "./EditLinkDialog";
 import { SidebarNavItem } from "./SidebarNavItem";
@@ -37,7 +38,7 @@ function EnvironmentListItem({
           type="button"
           variant="ghost"
           size="icon"
-          className="size-7 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
+          className="size-5 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
           title="编辑环境"
           aria-label={`编辑 ${env.name}`}
           onPointerDown={(e) => e.stopPropagation()}
@@ -46,7 +47,7 @@ function EnvironmentListItem({
             onEdit();
           }}
         >
-          <Icon icon={Edit02Icon} className="size-3.5" />
+          <Icon icon={Edit02Icon} className="size-3" />
         </Button>
       ) : undefined,
     [canWrite, env.name, onEdit],
@@ -96,18 +97,12 @@ export function EnvironmentList({
   return (
     <section className="border-border/50 flex h-full min-h-0 flex-col overflow-hidden border-t bg-transparent">
       <div className="flex min-w-0 shrink-0 items-center justify-between gap-2 px-4 pt-3 pb-1.5">
-        <h2
-          id="o5-env-list-heading"
-          className="text-muted-foreground/75 flex min-w-0 flex-1 items-center gap-1.5 text-[10px] font-semibold tracking-widest uppercase"
-        >
+        <h2 id="o5-env-list-heading" className={cn(o5SectionHeaderMutedClasses, "min-w-0 flex-1")}>
           <span className="size-1.5 shrink-0 rounded-full bg-emerald-500/60" />
           <span className="min-w-0 truncate">
             环境列表
             {environments.length > 0 && (
-              <span className="font-normal normal-case tracking-normal text-slate-400/80">
-                {" "}
-                · 按住拖动排序
-              </span>
+              <span className={o5SectionHeaderHintClasses}> · 按住拖动排序</span>
             )}
           </span>
         </h2>

@@ -3,6 +3,7 @@ import { LayoutGroup } from "motion/react";
 import type { O5System } from "@/types/o5-env";
 import { cn } from "@/lib/utils";
 
+import { o5SectionHeaderHintClasses, o5SectionHeaderMutedClasses } from "./o5-section-header";
 import { SidebarNavItem } from "./SidebarNavItem";
 import { SortableSidebarNavList } from "./SortableSidebarNavList";
 
@@ -16,14 +17,11 @@ type SystemListProps = {
 export function SystemList({ systems, selectedId, onSelect, onReorder }: SystemListProps) {
   return (
     <section className="flex h-full min-h-0 flex-col overflow-hidden bg-transparent">
-      <h2 className="text-muted-foreground/75 flex min-w-0 shrink-0 items-center gap-1.5 px-4 pt-3 pb-1.5 text-[10px] font-bold tracking-widest uppercase">
-        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary/60" />
+      <h2 className={cn(o5SectionHeaderMutedClasses, "shrink-0 px-4 pt-3 pb-1.5")}>
+        <span className="size-1.5 shrink-0 rounded-full bg-primary/60" />
         <span className="min-w-0 truncate">
           系统列表
-          <span className="font-normal normal-case tracking-normal text-slate-400/80">
-            {" "}
-            · 按住拖动排序
-          </span>
+          <span className={o5SectionHeaderHintClasses}> · 按住拖动排序</span>
         </span>
       </h2>
       <div className="scrollbar-thin min-h-0 flex-1 overflow-y-auto overscroll-y-contain">

@@ -38,5 +38,4 @@ export default defineConfig(({ mode }) => ({
     "*": "vp check --fix",
   },
   fmt: {},
-  lint: { options: { typeAware: true, typeCheck: true } },
 }));

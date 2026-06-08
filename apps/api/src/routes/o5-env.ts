@@ -11,6 +11,7 @@ import type {
 import type { Hono } from "hono";
 
 import { upsertAccount } from "../db/accounts.ts";
+import { externalFetch } from "../lib/external-fetch.ts";
 import { isMongoConfigured } from "../db/mongo.ts";
 import {
   addLinkToSystem,
@@ -295,7 +296,7 @@ export function registerO5EnvRoutes(app: Hono) {
           username: body.username,
           password: body.password,
         });
-        const res = await fetch(`${base}/testapi/app/login?${search}`, {
+        const res = await externalFetch(`${base}/testapi/app/login?${search}`, {
           method: "GET",
           headers: appHeaders,
         });
@@ -307,7 +308,7 @@ export function registerO5EnvRoutes(app: Hono) {
         if (!body.accessToken) {
           return c.json({ message: "accessToken is required" }, 400);
         }
-        const res = await fetch(
+        const res = await externalFetch(
           `${base}/testapi/contact/v1/orInv/contactV2/get_my_info_organization`,
           {
             method: "GET",
@@ -325,7 +326,7 @@ export function registerO5EnvRoutes(app: Hono) {
         if (!body.accessToken) {
           return c.json({ message: "accessToken is required" }, 400);
         }
-        const res = await fetch(`${base}/testapi/oauth/getAuthCode`, {
+        const res = await externalFetch(`${base}/testapi/oauth/getAuthCode`, {
           method: "GET",
           headers: {
             ...appHeaders,
@@ -338,8 +339,13 @@ export function registerO5EnvRoutes(app: Hono) {
 
       return c.json({ message: "Invalid action" }, 400);
     } catch (error) {
+      const code = (error as { cause?: { code?: string } }).cause?.code;
       console.error("login-proxy error:", error);
-      return c.json({ message: "Login proxy failed" }, 500);
+      const hint =
+        code === "CERT_HAS_EXPIRED"
+          ? "外部登录服务 SSL 证书已过期，请续期 env.lif3ng.cn:3443 证书"
+          : "Login proxy failed";
+      return c.json({ message: hint, code }, 500);
     }
   });
 

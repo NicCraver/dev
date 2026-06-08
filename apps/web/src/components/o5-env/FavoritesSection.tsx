@@ -9,6 +9,7 @@ import { favoriteChipClasses, favoriteChipIconClasses, focusRing } from "@/lib/i
 import { accountOrgLabel, accountPhone, type O5Account } from "@/types/o5-env";
 import { cn } from "@/lib/utils";
 
+import { o5SectionHeaderClasses, o5SectionHeaderHintClasses } from "./o5-section-header";
 import { SortableFavoritesRow, type FavoriteSortableProps } from "./SortableFavoritesRow";
 
 type FavoritesSectionProps = {
@@ -39,19 +40,14 @@ export function FavoritesSection({
       className="shrink-0 border-b border-neutral-200/40 bg-slate-50/20 backdrop-blur-md px-4 py-3 z-10"
       aria-label="常用账号"
     >
-      <p className="mb-2.5 flex min-w-0 items-center gap-1.5 text-xs font-bold tracking-wider text-amber-600/90 uppercase">
+      <p className={cn(o5SectionHeaderClasses, "mb-2.5 text-amber-600/90")}>
         <Icon
           icon={StarIcon}
-          className="size-4 shrink-0 text-amber-500 fill-amber-400 animate-pulse"
+          className="size-3.5 shrink-0 text-amber-500 fill-amber-400 animate-pulse"
         />
         <span className="min-w-0 truncate">
           常用账号 ({accounts.length})
-          {sortable && (
-            <span className="font-normal normal-case tracking-normal text-slate-400/90">
-              {" "}
-              · 按住拖动排序
-            </span>
-          )}
+          {sortable && <span className={o5SectionHeaderHintClasses}> · 按住拖动排序</span>}
         </span>
       </p>
       <SortableFavoritesRow

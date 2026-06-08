@@ -154,7 +154,7 @@ export function iconGhostClasses(variant: "neutral" | "amber" | "primary" | "dan
 /** 账号卡片容器（悬停抬升；内部按钮独立交互） */
 export function accountCardSurfaceClasses(isActive: boolean) {
   return cn(
-    "relative overflow-hidden bg-card rounded-xl border border-primary/20 py-4",
+    "relative overflow-hidden bg-card rounded-xl border border-primary/20 py-3.5",
     motion,
     "hover:-translate-y-0.5 hover:shadow-md hover:border-primary/35",
     isActive

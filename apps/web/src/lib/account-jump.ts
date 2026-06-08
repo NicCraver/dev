@@ -41,6 +41,7 @@ export async function openAccountJump(payload: AccountJumpRequest): Promise<void
     window.open(url, windowName, payload.features ?? "noopener,noreferrer");
   } catch (error) {
     console.error("跳转失败:", error);
-    alert("跳转失败，请重试");
+    const message = error instanceof Error ? error.message : "跳转失败，请重试";
+    alert(message);
   }
 }
