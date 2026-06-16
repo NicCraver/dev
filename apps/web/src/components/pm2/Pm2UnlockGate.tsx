@@ -6,6 +6,8 @@ import { cn } from "@/lib/utils";
 type Pm2UnlockGateProps = {
   error: string | null;
   onUnlock: (password: string) => Promise<void>;
+  title?: string;
+  description?: string;
 };
 
 const inputClassName = cn(
@@ -13,7 +15,12 @@ const inputClassName = cn(
   "outline-none focus-visible:ring-2 focus-visible:ring-primary/30 dark:bg-zinc-950",
 );
 
-export function Pm2UnlockGate({ error, onUnlock }: Pm2UnlockGateProps) {
+export function Pm2UnlockGate({
+  error,
+  onUnlock,
+  title = "PM2 进程管理",
+  description = "请输入访问密码以继续",
+}: Pm2UnlockGateProps) {
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -33,8 +40,8 @@ export function Pm2UnlockGate({ error, onUnlock }: Pm2UnlockGateProps) {
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8">
       <div className="w-full max-w-sm rounded-xl border border-border/50 bg-white/50 p-6 dark:bg-zinc-950/30">
-        <h1 className="text-base font-semibold">PM2 进程管理</h1>
-        <p className="text-muted-foreground mt-1 text-sm">请输入访问密码以继续</p>
+        <h1 className="text-base font-semibold">{title}</h1>
+        <p className="text-muted-foreground mt-1 text-sm">{description}</p>
 
         <form className="mt-5 flex flex-col gap-3" onSubmit={(e) => void handleSubmit(e)}>
           <input

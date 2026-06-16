@@ -1,6 +1,7 @@
 import type { DevDashModuleId } from "@mt-dev/shared";
 import {
   ComputerIcon,
+  Database01Icon,
   Mail01Icon,
   RobotIcon,
   Layers01Icon,
@@ -10,6 +11,7 @@ import { createElement, type ComponentType } from "react";
 
 import type { IconSvgElement } from "@/components/ui/icon";
 import { ComingSoon } from "@/pages/ComingSoon";
+import { MongoPage } from "@/pages/mongo/MongoPage";
 import { O5EnvPage } from "@/pages/o5-env/O5EnvPage";
 import { Pm2Page } from "@/pages/pm2/Pm2Page";
 import { ToolsPage } from "@/pages/tools/ToolsPage";
@@ -55,6 +57,14 @@ export const modules: DevDashModule[] = [
     navPath: "/pm2",
     icon: ComputerIcon,
     page: Pm2Page,
+  },
+  {
+    id: "mongo",
+    label: "Mongo",
+    routePath: "mongo",
+    navPath: "/mongo",
+    icon: Database01Icon,
+    page: MongoPage,
   },
   {
     id: "tools",

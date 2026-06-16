@@ -6,6 +6,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 
 import { registerO5EnvRoutes } from "./routes/o5-env.ts";
+import { registerMongoRoutes } from "./routes/mongo.ts";
 import { registerPm2Routes } from "./routes/pm2.ts";
 
 const PORT = Number(process.env.PORT ?? 6333);
@@ -31,6 +32,7 @@ app.get("/api/health", (c) => {
 });
 
 registerO5EnvRoutes(app);
+registerMongoRoutes(app);
 registerPm2Routes(app);
 
 serve(

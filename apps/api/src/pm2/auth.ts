@@ -45,13 +45,13 @@ function readBearerToken(c: Context): string | null {
   return header?.startsWith("Bearer ") ? header.slice(7) : null;
 }
 
-function hasPm2ApiAccess(c: Context): boolean {
-  const token = process.env.PM2_API_TOKEN?.trim();
-  if (!token) return true;
-  return readBearerToken(c) === token;
+export function verifyPagePassword(password: string): boolean {
+  const expected = process.env.PM2_PAGE_PASSWORD?.trim();
+  if (!expected) return true;
+  return password.trim() === expected;
 }
 
-function hasPageAccess(c: Context): boolean {
+export function checkPageAccess(c: Context): boolean {
   if (!isPagePasswordRequired()) return true;
   if (isUnlockSessionValid(c.req.header("X-PM2-Unlock"))) return true;
   const token = process.env.PM2_API_TOKEN?.trim();
@@ -59,10 +59,10 @@ function hasPageAccess(c: Context): boolean {
   return false;
 }
 
-export function verifyPagePassword(password: string): boolean {
-  const expected = process.env.PM2_PAGE_PASSWORD?.trim();
-  if (!expected) return true;
-  return password.trim() === expected;
+export function checkApiTokenAccess(c: Context): boolean {
+  const token = process.env.PM2_API_TOKEN?.trim();
+  if (!token) return true;
+  return readBearerToken(c) === token;
 }
 
 export async function pm2AuthMiddleware(c: Context, next: Next) {
@@ -72,11 +72,11 @@ export async function pm2AuthMiddleware(c: Context, next: Next) {
     return;
   }
 
-  if (!hasPageAccess(c)) {
+  if (!checkPageAccess(c)) {
     return c.json({ message: "需要 PM2 页面密码" }, 401);
   }
 
-  if (!hasPm2ApiAccess(c)) {
+  if (!checkApiTokenAccess(c)) {
     return c.json({ message: "未授权，请配置 PM2 API Token" }, 401);
   }
 
