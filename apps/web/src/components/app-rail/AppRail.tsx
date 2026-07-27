@@ -9,7 +9,13 @@ export function AppRail() {
       aria-label="应用导航"
     >
       {modules.map((m) => (
-        <AppRailItem key={m.id} to={m.navPath} label={m.label} icon={m.icon} />
+        <AppRailItem
+          key={m.id}
+          to={m.navPath}
+          label={m.label}
+          icon={m.icon}
+          matchPrefix={m.navMatchPrefix}
+        />
       ))}
     </nav>
   );

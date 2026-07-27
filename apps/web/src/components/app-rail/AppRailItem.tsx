@@ -9,11 +9,12 @@ type AppRailItemProps = {
   to: string;
   label: string;
   icon: IconSvgElement;
+  matchPrefix?: boolean;
 };
 
-export function AppRailItem({ to, label, icon }: AppRailItemProps) {
+export function AppRailItem({ to, label, icon, matchPrefix = false }: AppRailItemProps) {
   return (
-    <NavLink to={to} title={label} end>
+    <NavLink to={to} title={label} end={!matchPrefix}>
       {({ isActive }) => (
         <Button
           variant="ghost"

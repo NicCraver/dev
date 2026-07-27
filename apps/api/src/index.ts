@@ -5,9 +5,11 @@ import type { HealthResponse } from "@mt-dev/shared";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 
+import { registerHttpProxyRoutes } from "./routes/http-proxy.ts";
 import { registerO5EnvRoutes } from "./routes/o5-env.ts";
 import { registerMongoRoutes } from "./routes/mongo.ts";
 import { registerPm2Routes } from "./routes/pm2.ts";
+import { registerYapiRoutes } from "./routes/yapi.ts";
 
 const PORT = Number(process.env.PORT ?? 6333);
 
@@ -34,6 +36,8 @@ app.get("/api/health", (c) => {
 registerO5EnvRoutes(app);
 registerMongoRoutes(app);
 registerPm2Routes(app);
+registerYapiRoutes(app);
+registerHttpProxyRoutes(app);
 
 serve(
   {

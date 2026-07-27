@@ -1,5 +1,6 @@
 import type { DevDashModuleId } from "@mt-dev/shared";
 import {
+  ApiIcon,
   ComputerIcon,
   Database01Icon,
   Mail01Icon,
@@ -15,6 +16,7 @@ import { MongoPage } from "@/pages/mongo/MongoPage";
 import { O5EnvPage } from "@/pages/o5-env/O5EnvPage";
 import { Pm2Page } from "@/pages/pm2/Pm2Page";
 import { ToolsPage } from "@/pages/tools/ToolsPage";
+import { YapiPage } from "@/pages/yapi/YapiPage";
 
 export type DevDashModule = {
   id: DevDashModuleId;
@@ -23,6 +25,8 @@ export type DevDashModule = {
   navPath: string;
   icon: IconSvgElement;
   page: ComponentType;
+  /** 为 true 时侧栏 NavLink 匹配子路径（如 /yapi/projects） */
+  navMatchPrefix?: boolean;
 };
 
 export const modules: DevDashModule[] = [
@@ -65,6 +69,15 @@ export const modules: DevDashModule[] = [
     navPath: "/mongo",
     icon: Database01Icon,
     page: MongoPage,
+  },
+  {
+    id: "yapi",
+    label: "YApi",
+    routePath: "yapi/*",
+    navPath: "/yapi",
+    icon: ApiIcon,
+    page: YapiPage,
+    navMatchPrefix: true,
   },
   {
     id: "tools",

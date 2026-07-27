@@ -1,6 +1,6 @@
 # mt-dev (Dev Dash)
 
-内部开发工具台：左侧应用栏切换模块，右侧为各模块页面。当前已实现 **O5 env**（账号环境）、**工具**（JSON 修复、时间戳转换等）、**PM2**（进程管理）；智邮 / aichat env 为 Coming Soon 占位。
+内部开发工具台：左侧应用栏切换模块，右侧为各模块页面。当前已实现 **O5 env**（账号环境）、**工具**（JSON 修复、时间戳转换等）、**PM2**（进程管理）、**Mongo**（数据编辑）、**YApi**（接口文档浏览）；智邮 / aichat env 为 Coming Soon 占位。
 
 设计文档见 `docs/superpowers/specs/` 与 `docs/superpowers/plans/`。
 
@@ -115,6 +115,7 @@ sudo nginx -t && sudo nginx -s reload
 - **壳布局**：`AppShell` = `AppRail` + `<Outlet />`；默认重定向到 `/o5-env`。
 - **工具页**：`apps/web/src/app/tools/registry.tsx` 注册 `ToolDefinition`；页面在 `components/tools/`，纯逻辑可放 `lib/`（如 `json-repair.ts`、`timestamp-parse.ts`）。
 - **O5 env**：`pages/o5-env/`、`components/o5-env/`；数据来自 `GET /api/o5-env/bootstrap`（Mongo 库 `mt-dev`：`accounts` 全局账号 + `systems` 环境与引用），dev 无库时回退 `mocks/o5-env.ts`；`pnpm --filter @mt-dev/api db:init` / `db:seed`；跳转见 `lib/external-login.ts`、`lib/account-jump.ts`。
+- **YApi**：`pages/yapi/`、`components/yapi/`；YApi 账号登录 + 项目/接口三栏浏览 + 本地自定义收藏 + **接口调试**（`/yapi/debug`：O5 账号登录、测试/生产环境、改参发请求看回参）；前端请求 `/api/yapi/*`，由 API 反代到 `YAPI_UPSTREAM`（默认 `http://127.0.0.1:3100`）。业务调试请求走 `POST /api/http-proxy`（白名单 host）。本地开发需 SSH 隧道：`ssh -L 3100:127.0.0.1:3100 lifeng@env.lif3ng.cn`。
 - **UI**：shadcn 风格组件在 `components/ui/`；图标用 `@hugeicons/react`；样式 Tailwind 4 + `index.css` 设计 token。
 - **交互**：键盘/滚动等共享逻辑见 `lib/interaction.ts`、`lib/keyboard-shortcut.ts`。
 - **质量检查**：改完前端后，在 `apps/web` 目录执行 `npx -y react-doctor@latest .`，按报告修复问题直至得分为 **100**。
@@ -126,6 +127,8 @@ sudo nginx -t && sudo nginx -s reload
 - 环境变量见 `apps/api/.env.example`（启动时自动加载；可选 `apps/api/.env` 覆盖，已 gitignore）。
 - O5 相关路由：`/api/o5-env/bootstrap`、`/api/o5-env/login-proxy`、`/api/user/add`、`/api/link/add`、`/api/recommend/:env`、`/api/share/new`。Mongo 集合见 `apps/api/src/db/mongo.ts`（`accounts`、`systems`；旧 `kvs` 仅 env-share 兼容）。
 - PM2 路由（`PM2_ENABLED=true`）：`/api/pm2/*`，实现见 `apps/api/src/routes/pm2.ts`、`apps/api/src/pm2/`。
+- YApi 反代：`/api/yapi/*` → `YAPI_UPSTREAM`，实现见 `apps/api/src/routes/yapi.ts`；健康检查 `GET /api/yapi/status`。
+- 业务 HTTP 代理：`POST /api/http-proxy`（白名单：`192.168.10.25`、`zhixin.zhiguaniot.com`），见 `apps/api/src/routes/http-proxy.ts`。
 
 ## 改动时注意
 
