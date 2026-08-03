@@ -98,3 +98,23 @@ export function detailToIface(data: YapiInterfaceDetail, catId: string): IfaceIt
     custom: false,
   });
 }
+
+/** 将单项目 menu/list 映射为「项目 · 分类」维度的 cats + items（用于全部接口） */
+export function mapProjectToGlobalBrowse(
+  projectId: number,
+  projectName: string,
+  menu: YapiMenuCat[],
+  list: YapiListItem[],
+): { cats: Category[]; items: IfaceItem[] } {
+  const cats: Category[] = mapMenuToCategories(menu).map((c) => ({
+    ...c,
+    id: `p${projectId}-c${c.id}`,
+    name: `${projectName} · ${c.name}`,
+  }));
+  const items = mergeListIntoMenuItems(menu, list).map((it) => ({
+    ...it,
+    cat: `p${projectId}-c${it.cat}`,
+    projectId,
+  }));
+  return { cats, items };
+}

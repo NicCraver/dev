@@ -42,7 +42,6 @@ export function YapiProjectListPage() {
 
   const refreshCollections = () => setCollections(loadCollections());
   const favProjects = projects.filter((p) => favIds.has(p._id));
-  const totalIfaces = collections.reduce((n, c) => n + subcatTotal(c), 0);
 
   const onToggleFav = (e: MouseEvent, id: number) => {
     e.preventDefault();
@@ -114,14 +113,18 @@ export function YapiProjectListPage() {
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           <Link
             to={`${YAPI_BASE}/all`}
-            className="border-primary/25 bg-primary/5 hover:border-primary/40 group rounded-xl border p-4 transition-all hover:-translate-y-0.5 hover:shadow-sm"
+            className="border-primary/25 bg-primary/5 hover:border-primary/40 group rounded-xl border p-4 transition-[border-color,box-shadow,transform] hover:-translate-y-0.5 hover:shadow-sm"
           >
             <div className="bg-primary/10 text-primary mb-3 flex size-9 items-center justify-center rounded-lg">
               <Icon icon={Layers01Icon} className="size-4" />
             </div>
             <div className="font-medium text-slate-800">全部接口</div>
             <div className="text-muted-foreground mt-1 text-xs">
-              {totalIfaces ? `${totalIfaces} 个收藏接口` : "尚未收藏任何接口"}
+              {loading
+                ? "加载项目中…"
+                : projects.length
+                  ? `汇总 ${projects.length} 个项目，全局搜索`
+                  : "汇总所有项目接口，便于搜索"}
             </div>
           </Link>
 
@@ -129,7 +132,7 @@ export function YapiProjectListPage() {
             <Link
               key={c.id}
               to={`${YAPI_BASE}/custom/${c.id}`}
-              className="border-border/60 hover:border-primary/30 group rounded-xl border bg-white p-4 transition-all hover:-translate-y-0.5 hover:shadow-sm"
+              className="border-border/60 hover:border-primary/30 group rounded-xl border bg-white p-4 transition-[border-color,box-shadow,transform] hover:-translate-y-0.5 hover:shadow-sm"
             >
               <div className="bg-muted text-muted-foreground mb-3 flex size-9 items-center justify-center rounded-lg">
                 <Icon icon={Folder01Icon} className="size-4" />
@@ -200,7 +203,7 @@ function ProjectCard({
   return (
     <Link
       to={`${YAPI_BASE}/projects/${p._id}`}
-      className="border-border/60 hover:border-primary/30 group relative rounded-xl border bg-white p-4 transition-all hover:-translate-y-0.5 hover:shadow-sm"
+      className="border-border/60 hover:border-primary/30 group relative rounded-xl border bg-white p-4 transition-[border-color,box-shadow,transform] hover:-translate-y-0.5 hover:shadow-sm"
     >
       <button
         type="button"

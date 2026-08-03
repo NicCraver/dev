@@ -2,9 +2,13 @@ export type YapiDebugAuthSession = {
   username: string;
   name: string;
   accessToken: string;
+  corpId: string;
+  corpName: string;
+  /** 与 shortcut 一致，默认 app */
+  clientType: string;
 };
 
-const AUTH_KEY = "mt-dev:yapi-debug:auth";
+const AUTH_KEY = "mt-dev:yapi-debug:auth:v2";
 
 export function loadDebugAuth(): YapiDebugAuthSession | null {
   try {
@@ -16,6 +20,9 @@ export function loadDebugAuth(): YapiDebugAuthSession | null {
       username: parsed.username,
       name: parsed.name || "",
       accessToken: parsed.accessToken,
+      corpId: parsed.corpId || "",
+      corpName: parsed.corpName || "",
+      clientType: parsed.clientType || "app",
     };
   } catch {
     return null;

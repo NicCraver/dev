@@ -1,24 +1,17 @@
 import {
   Add01Icon,
   ArrowLeft01Icon,
-  CheckmarkCircle02Icon,
-  Copy01Icon,
-  Delete02Icon,
   Download01Icon,
-  DragDropVerticalIcon,
-  Folder01Icon,
   Logout01Icon,
   Search01Icon,
 } from "@hugeicons/core-free-icons";
 import { useEffect, useRef, useState } from "react";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
-import { YapiMethodBadge } from "@/components/yapi/YapiMethodBadge";
-import { YapiSortableIfaceList } from "@/components/yapi/YapiSortableIfaceList";
+import { YapiCategoryGroup } from "@/components/yapi/YapiCategoryGroup";
 import { useCopyYapiIface } from "@/hooks/useCopyYapiIface";
-import { navItemClasses, searchFieldClasses, shortcutKbdClasses } from "@/lib/interaction";
+import { searchFieldClasses, shortcutKbdClasses } from "@/lib/interaction";
 import { cn } from "@/lib/utils";
 import type { Category, IfaceItem } from "@/lib/yapi-types";
 
@@ -95,12 +88,16 @@ export function YapiCategorySidebar({
   const filtered = (() => {
     const q = query.trim().toLowerCase();
     if (!q) return items;
-    return items.filter(
-      (it) =>
+    return items.filter((it) => {
+      const catName = cats.find((c) => c.id === it.cat)?.name?.toLowerCase() || "";
+      return (
         it.title.toLowerCase().includes(q) ||
         it.path.toLowerCase().includes(q) ||
-        (it.tag || []).some((t) => t.toLowerCase().includes(q)),
-    );
+        it.method.toLowerCase().includes(q) ||
+        catName.includes(q) ||
+        (it.tag || []).some((t) => t.toLowerCase().includes(q))
+      );
+    });
   })();
   const filteredIds = new Set(filtered.map((i) => i.id));
 
@@ -109,8 +106,9 @@ export function YapiCategorySidebar({
       <div className="border-border/60 border-b px-4 py-3">
         {renaming ? (
           <input
-            className="border-border/60 w-full rounded-md border px-2 py-1 text-sm font-semibold outline-none focus:ring-2 focus:ring-primary/20"
+            className="border-border/60 focus:ring-primary/20 w-full rounded-md border px-2 py-1 text-sm font-semibold outline-none focus:ring-2"
             autoFocus
+            aria-label="重命名项目"
             value={draftName}
             onChange={(e) => setDraftName(e.target.value)}
             onBlur={() => {
@@ -153,7 +151,7 @@ export function YapiCategorySidebar({
       </div>
 
       {(onBack || onLogout) && (
-        <div className="flex flex-wrap gap-1 border-b border-border/40 px-2 py-2">
+        <div className="border-border/40 flex flex-wrap gap-1 border-b px-2 py-2">
           {onBack ? (
             <Button
               type="button"
@@ -182,11 +180,15 @@ export function YapiCategorySidebar({
       )}
 
       <div className="px-3 py-2">
+        <label htmlFor="yapi-iface-search" className="sr-only">
+          搜索接口
+        </label>
         <div className={cn(searchFieldClasses(), "flex items-center gap-2 px-3 py-2")}>
           <Icon icon={Search01Icon} className="text-muted-foreground size-4 shrink-0" />
           <input
+            id="yapi-iface-search"
             ref={searchRef}
-            placeholder="搜索接口名 / 路径 / 标签"
+            placeholder="接口名 / 路径 / 方法 / 分类"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className="min-w-0 flex-1 bg-transparent text-sm outline-none"
@@ -201,138 +203,27 @@ export function YapiCategorySidebar({
         ) : (
           cats.map((c) => {
             const catItems = items.filter((i) => i.cat === c.id && filteredIds.has(i.id));
+            if (query.trim() && catItems.length === 0) return null;
             const isOpen = query.trim() ? true : !!open[c.id];
-            const canDeleteCat = !!c.custom;
             return (
-              <div key={c.id} className="mb-1">
-                <button
-                  type="button"
-                  className="hover:bg-muted/60 flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-xs font-medium text-slate-700"
-                  onClick={() => setOpen({ ...open, [c.id]: !isOpen })}
-                >
-                  <Icon icon={Folder01Icon} className="text-muted-foreground size-3.5" />
-                  <span className="min-w-0 flex-1 truncate">{c.name}</span>
-                  {canDeleteCat ? (
-                    <Badge variant="outline" className="text-[9px]">
-                      自定义
-                    </Badge>
-                  ) : null}
-                  <span className="text-muted-foreground tabular-nums">{catItems.length}</span>
-                  {canDeleteCat && onAddToSubcat ? (
-                    <button
-                      type="button"
-                      className="text-muted-foreground hover:text-primary rounded p-0.5"
-                      title="添加接口"
-                      aria-label={`向「${c.name}」添加接口`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onAddToSubcat(c.id, c.name);
-                      }}
-                    >
-                      <Icon icon={Add01Icon} className="size-3" />
-                    </button>
-                  ) : null}
-                  {canDeleteCat && onDeleteCat ? (
-                    <button
-                      type="button"
-                      className="text-muted-foreground hover:text-destructive rounded p-0.5"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDeleteCat(c.id);
-                      }}
-                    >
-                      <Icon icon={Delete02Icon} className="size-3" />
-                    </button>
-                  ) : null}
-                </button>
-                {isOpen ? (
-                  <div className="mt-0.5 space-y-0.5 pl-1">
-                    <YapiSortableIfaceList
-                      items={catItems}
-                      enabled={sortable && canDeleteCat && !query.trim() && !!onReorderItems}
-                      onReorder={(activeId, overId) => onReorderItems?.(c.id, activeId, overId)}
-                      overlayClassName="rounded-lg bg-white shadow-md ring-2 ring-primary/20"
-                      renderItem={(it, { dragHandle, isDragging }) => {
-                        const isActive = it.id === activeId;
-                        const canDeleteItem = !!(it.custom || c.custom);
-                        const docCopied = isCopied(it.id);
-                        const docCopying = isCopying(it.id);
-                        return (
-                          <div
-                            className={cn(
-                              "flex items-start gap-0.5 rounded-lg",
-                              isDragging && "shadow-sm",
-                            )}
-                          >
-                            {dragHandle ? (
-                              <button
-                                type="button"
-                                className="text-muted-foreground hover:text-foreground mt-2.5 shrink-0 cursor-grab touch-none rounded p-1 active:cursor-grabbing"
-                                aria-label="拖拽排序"
-                                {...dragHandle.attributes}
-                                {...dragHandle.listeners}
-                              >
-                                <Icon icon={DragDropVerticalIcon} className="size-4" />
-                              </button>
-                            ) : null}
-                            <button
-                              type="button"
-                              className={cn(
-                                "flex min-w-0 flex-1 flex-col gap-1 rounded-lg px-2.5 py-2 text-left",
-                                navItemClasses({ selected: isActive }),
-                              )}
-                              onClick={() => onSelect(it.id)}
-                            >
-                              <div className="flex min-w-0 items-center gap-2">
-                                <YapiMethodBadge method={it.method} className="text-[11px]" />
-                                <span className="min-w-0 flex-1 truncate text-sm font-medium text-slate-800">
-                                  {it.title}
-                                </span>
-                              </div>
-                              <code className="text-muted-foreground block truncate font-mono text-xs">
-                                {it.path}
-                              </code>
-                            </button>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              className="text-muted-foreground hover:text-foreground mt-1 size-8 shrink-0"
-                              disabled={docCopying}
-                              aria-label={docCopied ? "已复制接口文档" : "复制接口文档"}
-                              title={docCopied ? "已复制" : "复制接口文档"}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                void copyIface(it, c);
-                              }}
-                            >
-                              <Icon
-                                icon={docCopied ? CheckmarkCircle02Icon : Copy01Icon}
-                                className="size-4"
-                              />
-                            </Button>
-                            {canDeleteItem && onDeleteItem ? (
-                              <button
-                                type="button"
-                                className="text-muted-foreground hover:text-destructive mt-1 shrink-0 rounded p-1"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  onDeleteItem(it.id);
-                                }}
-                              >
-                                <Icon icon={Delete02Icon} className="size-3.5" />
-                              </button>
-                            ) : null}
-                          </div>
-                        );
-                      }}
-                    />
-                    {catItems.length === 0 ? (
-                      <div className="text-muted-foreground px-3 py-1 text-xs">无匹配</div>
-                    ) : null}
-                  </div>
-                ) : null}
-              </div>
+              <YapiCategoryGroup
+                key={c.id}
+                cat={c}
+                catItems={catItems}
+                isOpen={isOpen}
+                activeId={activeId}
+                query={query}
+                sortable={sortable}
+                onToggle={() => setOpen({ ...open, [c.id]: !isOpen })}
+                onSelect={onSelect}
+                onDeleteCat={onDeleteCat}
+                onDeleteItem={onDeleteItem}
+                onAddToSubcat={onAddToSubcat}
+                onReorderItems={onReorderItems}
+                isCopied={isCopied}
+                isCopying={isCopying}
+                onCopy={(it, cat) => void copyIface(it, cat)}
+              />
             );
           })
         )}

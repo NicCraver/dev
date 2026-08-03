@@ -1,4 +1,5 @@
 import type { HttpMethod, IfaceItem } from "@/lib/yapi-types";
+import type { YapiDebugAuthSession } from "@/lib/yapi-debug-auth";
 
 export type KvPair = { key: string; value: string };
 
@@ -9,6 +10,17 @@ export type YapiDebugDraft = {
   headers: KvPair[];
   bodyText: string;
 };
+
+/** 对齐 dev-o5-shortcut axiosInstance 默认头 */
+export const O5_DEFAULT_HEADERS = {
+  "Content-Type": "application/json;charset=utf-8",
+  version: "v1",
+  clientType: "app",
+} as const;
+
+const O5_HEADER_KEYS = new Set(
+  ["content-type", "version", "clienttype", "authorization", "zxcorpid"].map((k) => k),
+);
 
 function stringifyExample(example: unknown): string {
   if (example == null || example === "") return "";
@@ -34,7 +46,29 @@ export function applyPathParams(path: string, pathParams: KvPair[]): string {
   return result;
 }
 
-export function buildDebugDraft(iface: IfaceItem): YapiDebugDraft {
+function stripO5ManagedHeaders(headers: KvPair[]): KvPair[] {
+  return headers.filter((h) => !O5_HEADER_KEYS.has(h.key.trim().toLowerCase()));
+}
+
+/** 生成可编辑的 O5 标准 Headers（未登录时 token/corp 留空占位） */
+export function buildO5HeaderPairs(session: YapiDebugAuthSession | null): KvPair[] {
+  const clientType = session?.clientType || O5_DEFAULT_HEADERS.clientType;
+  return [
+    { key: "Content-Type", value: O5_DEFAULT_HEADERS["Content-Type"] },
+    { key: "version", value: O5_DEFAULT_HEADERS.version },
+    { key: "clientType", value: clientType },
+    {
+      key: "Authorization",
+      value: session?.accessToken ? `Bearer ${session.accessToken}` : "Bearer ",
+    },
+    { key: "zxCorpId", value: session?.corpId || "" },
+  ];
+}
+
+export function buildDebugDraft(
+  iface: IfaceItem,
+  session: YapiDebugAuthSession | null = null,
+): YapiDebugDraft {
   const query = (iface.query || []).map((q) => ({
     key: q.name,
     value: q.example != null ? String(q.example) : "",
@@ -45,19 +79,18 @@ export function buildDebugDraft(iface: IfaceItem): YapiDebugDraft {
     value: p.example != null ? String(p.example) : "",
   }));
 
-  const headers: KvPair[] = (iface.headers || [])
-    .filter((h) => h.name && h.name.toLowerCase() !== "authorization")
-    .map((h) => ({
+  const fromDoc: KvPair[] = [];
+  for (const h of iface.headers || []) {
+    if (!h.name) continue;
+    fromDoc.push({
       key: h.name,
       value: h.example != null ? String(h.example) : "",
-    }));
+    });
+  }
+  const headers = [...buildO5HeaderPairs(session), ...stripO5ManagedHeaders(fromDoc)];
 
   const method = iface.method;
   const hasJsonBody = !!iface.body && method !== "GET" && method !== "DELETE";
-  if (hasJsonBody && !headers.some((h) => h.key.toLowerCase() === "content-type")) {
-    headers.push({ key: "Content-Type", value: "application/json" });
-  }
-
   const bodyText = hasJsonBody ? stringifyExample(iface.body?.example) : "";
 
   return {
@@ -100,14 +133,50 @@ export function kvToRecord(pairs: KvPair[]): Record<string, string> {
   return out;
 }
 
-export function mergeAuthHeader(
+/**
+ * 合并发送用 Headers：以编辑器为准，并确保 shortcut 必需头存在。
+ * Authorization / zxCorpId / clientType 在编辑器未填时用 session 补齐。
+ */
+export function mergeO5Headers(
   headers: KvPair[],
-  accessToken: string | null,
+  session: YapiDebugAuthSession | null,
 ): Record<string, string> {
   const record = kvToRecord(headers);
-  const hasAuth = Object.keys(record).some((k) => k.toLowerCase() === "authorization");
-  if (!hasAuth && accessToken) {
-    record.Authorization = `Bearer ${accessToken}`;
+
+  const lower = (name: string) =>
+    Object.keys(record).find((k) => k.toLowerCase() === name.toLowerCase());
+
+  if (!lower("Content-Type")) {
+    record["Content-Type"] = O5_DEFAULT_HEADERS["Content-Type"];
   }
+  if (!lower("version")) {
+    record.version = O5_DEFAULT_HEADERS.version;
+  }
+
+  const clientKey = lower("clientType");
+  if (!clientKey) {
+    record.clientType = session?.clientType || O5_DEFAULT_HEADERS.clientType;
+  } else if (!record[clientKey]) {
+    record[clientKey] = session?.clientType || O5_DEFAULT_HEADERS.clientType;
+  }
+
+  const authKey = lower("Authorization");
+  if (session?.accessToken) {
+    if (!authKey) {
+      record.Authorization = `Bearer ${session.accessToken}`;
+    } else if (!record[authKey]?.replace(/^Bearer\s*/i, "").trim()) {
+      record[authKey] = `Bearer ${session.accessToken}`;
+    }
+  }
+
+  const corpKey = lower("zxCorpId");
+  if (session?.corpId) {
+    if (!corpKey) {
+      record.zxCorpId = session.corpId;
+    } else if (!record[corpKey]?.trim()) {
+      record[corpKey] = session.corpId;
+    }
+  }
+
   return record;
 }

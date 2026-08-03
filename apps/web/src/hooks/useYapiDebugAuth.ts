@@ -1,7 +1,8 @@
-import type { O5EnvBootstrapResponse } from "@mt-dev/shared";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import type { Corp } from "@mt-dev/shared";
+import { useCallback, useMemo, useState } from "react";
 
-import { loginApp } from "@/lib/external-login";
+import { useO5EnvData } from "@/hooks/useO5EnvData";
+import { fetchCorpList, loginApp } from "@/lib/external-login";
 import {
   clearDebugAuth,
   loadDebugAuth,
@@ -21,63 +22,50 @@ function dedupeAccounts(accounts: O5Account[]): O5Account[] {
   return out.sort((a, b) => a.name.localeCompare(b.name, "zh-CN"));
 }
 
+function pickCorp(corps: Corp[], preferredId?: string): Corp | null {
+  if (!corps.length) return null;
+  if (preferredId) {
+    const found = corps.find((c) => c.corpId === preferredId);
+    if (found) return found;
+  }
+  return corps[0] ?? null;
+}
+
 export function useYapiDebugAuth() {
+  const { accountsBySystem, loading: loadingAccounts, error: accountsError } = useO5EnvData();
   const [session, setSession] = useState<YapiDebugAuthSession | null>(() => loadDebugAuth());
-  const [accounts, setAccounts] = useState<O5Account[]>([]);
-  const [loadingAccounts, setLoadingAccounts] = useState(true);
-  const [accountsError, setAccountsError] = useState<string | null>(null);
   const [loggingIn, setLoggingIn] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
 
-  useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      setLoadingAccounts(true);
-      setAccountsError(null);
-      try {
-        const res = await fetch("/api/o5-env/bootstrap");
-        if (!res.ok) {
-          throw new Error(
-            res.status === 503 ? "MongoDB 未配置，无法加载账号" : `加载失败 (${res.status})`,
-          );
-        }
-        const body = (await res.json()) as O5EnvBootstrapResponse;
-        const flat: O5Account[] = [];
-        for (const sys of body.systems) {
-          for (const a of sys.accounts) {
-            flat.push({
-              id: a.id,
-              username: a.username,
-              password: a.password,
-              name: a.name,
-              corpList: a.corpList ?? [],
-            });
-          }
-        }
-        if (!cancelled) setAccounts(dedupeAccounts(flat));
-      } catch (err) {
-        if (!cancelled) {
-          setAccounts([]);
-          setAccountsError(err instanceof Error ? err.message : "加载账号失败");
-        }
-      } finally {
-        if (!cancelled) setLoadingAccounts(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const accounts = useMemo(
+    () => dedupeAccounts(Object.values(accountsBySystem).flat()),
+    [accountsBySystem],
+  );
 
-  const loginWithAccount = useCallback(async (account: O5Account) => {
+  const loginWithAccount = useCallback(async (account: O5Account, corpId?: string) => {
     setLoggingIn(true);
     setLoginError(null);
     try {
       const result = await loginApp(account.username, account.password);
+      let corps = account.corpList ?? [];
+      if (!corps.length) {
+        try {
+          corps = await fetchCorpList(result.access_token);
+        } catch {
+          corps = [];
+        }
+      }
+      const corp = pickCorp(corps, corpId);
+      if (!corp) {
+        throw new Error("该账号没有可用企业，无法设置 zxCorpId");
+      }
       const next: YapiDebugAuthSession = {
         username: account.username,
         name: result.name || account.name,
         accessToken: result.access_token,
+        corpId: corp.corpId,
+        corpName: corp.name,
+        clientType: "app",
       };
       saveDebugAuth(next);
       setSession(next);
@@ -88,6 +76,19 @@ export function useYapiDebugAuth() {
     } finally {
       setLoggingIn(false);
     }
+  }, []);
+
+  const setCorp = useCallback((corp: Corp) => {
+    setSession((prev) => {
+      if (!prev) return prev;
+      const next: YapiDebugAuthSession = {
+        ...prev,
+        corpId: corp.corpId,
+        corpName: corp.name,
+      };
+      saveDebugAuth(next);
+      return next;
+    });
   }, []);
 
   const logout = useCallback(() => {
@@ -110,6 +111,7 @@ export function useYapiDebugAuth() {
     loggingIn,
     loginError,
     loginWithAccount,
+    setCorp,
     logout,
   };
 }

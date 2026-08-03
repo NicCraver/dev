@@ -1,5 +1,5 @@
 import { ArrowLeft01Icon } from "@hugeicons/core-free-icons";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
@@ -7,7 +7,7 @@ import { Icon } from "@/components/ui/icon";
 import { YapiDebugIfacePicker } from "@/components/yapi/YapiDebugIfacePicker";
 import { YapiDebugRequestEditor } from "@/components/yapi/YapiDebugRequestEditor";
 import { YapiDebugResponsePanel } from "@/components/yapi/YapiDebugResponsePanel";
-import { YapiDebugToolbar, loadDebugEnvId } from "@/components/yapi/YapiDebugToolbar";
+import { YapiDebugToolbar } from "@/components/yapi/YapiDebugToolbar";
 import { YAPI_BASE } from "@/hooks/useYapiAuth";
 import { useYapiDebugAuth } from "@/hooks/useYapiDebugAuth";
 import { HttpProxyError, sendViaProxy, type HttpProxyResponse } from "@/lib/http-proxy-api";
@@ -19,24 +19,32 @@ import {
   type YapiMenuCat,
   type YapiProject,
 } from "@/lib/yapi-api";
-import { convertYapiData } from "@/lib/yapi-import";
-import { getDebugEnv, type YapiDebugEnvId } from "@/lib/yapi-debug-env";
+import type { YapiDebugAuthSession } from "@/lib/yapi-debug-auth";
+import { getDebugEnv, loadDebugEnvId, type YapiDebugEnvId } from "@/lib/yapi-debug-env";
 import {
   buildDebugDraft,
+  buildO5HeaderPairs,
   composeRequestUrl,
-  mergeAuthHeader,
+  mergeO5Headers,
   type KvPair,
   type YapiDebugDraft,
 } from "@/lib/yapi-debug-request";
+import { convertYapiData } from "@/lib/yapi-import";
 import type { HttpMethod, IfaceItem } from "@/lib/yapi-types";
 
 const emptyDraft: YapiDebugDraft = {
   method: "GET",
   path: "/",
   query: [],
-  headers: [],
+  headers: buildO5HeaderPairs(null),
   bodyText: "",
 };
+
+function syncO5HeadersInDraft(headers: KvPair[], session: YapiDebugAuthSession | null): KvPair[] {
+  const managed = new Set(["content-type", "version", "clienttype", "authorization", "zxcorpid"]);
+  const rest = headers.filter((h) => !managed.has(h.key.trim().toLowerCase()));
+  return [...buildO5HeaderPairs(session), ...rest];
+}
 
 export function YapiDebugPage() {
   const [searchParams] = useSearchParams();
@@ -45,20 +53,47 @@ export function YapiDebugPage() {
   const [envId, setEnvId] = useState<YapiDebugEnvId>(() => loadDebugEnvId());
   const [projects, setProjects] = useState<YapiProject[]>([]);
   const [projectsLoading, setProjectsLoading] = useState(true);
-  const [projectId, setProjectId] = useState<number | null>(null);
   const [menu, setMenu] = useState<YapiMenuCat[]>([]);
   const [menuLoading, setMenuLoading] = useState(false);
-  const [selectedIfaceId, setSelectedIfaceId] = useState<number | null>(null);
-  const [ifaceTitle, setIfaceTitle] = useState("");
+  const [selection, setSelection] = useState<{
+    projectId: number | null;
+    ifaceId: number | null;
+    title: string;
+  }>({ projectId: null, ifaceId: null, title: "" });
   const [draft, setDraft] = useState<YapiDebugDraft>(emptyDraft);
   const [sending, setSending] = useState(false);
   const [response, setResponse] = useState<HttpProxyResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [bootstrappedQuery, setBootstrappedQuery] = useState(false);
+  const bootstrappedQuery = useRef(false);
+
+  const projectId = selection.projectId;
+  const selectedIfaceId = selection.ifaceId;
+  const ifaceTitle = selection.title;
 
   const project = useMemo(
     () => projects.find((p) => p._id === projectId) ?? null,
     [projects, projectId],
+  );
+
+  const loadIfaceDetail = useCallback(
+    async (id: number) => {
+      try {
+        const raw = await getInterface(id);
+        const iface: IfaceItem = convertYapiData(
+          raw as Parameters<typeof convertYapiData>[0],
+          String(raw.catid ?? "debug"),
+          undefined,
+          { custom: false },
+        );
+        setSelection((prev) => ({ ...prev, ifaceId: id, title: iface.title }));
+        setDraft(buildDebugDraft(iface, debugAuth.session));
+        setResponse(null);
+        setError(null);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "加载接口失败");
+      }
+    },
+    [debugAuth.session],
   );
 
   useEffect(() => {
@@ -79,18 +114,17 @@ export function YapiDebugPage() {
   }, []);
 
   useEffect(() => {
-    if (bootstrappedQuery || projectsLoading) return;
+    if (bootstrappedQuery.current || projectsLoading) return;
     const qProject = Number(searchParams.get("project") || "");
     const qIface = Number(searchParams.get("iface") || "");
     if (!Number.isNaN(qProject) && qProject > 0) {
-      setProjectId(qProject);
+      setSelection((prev) => ({ ...prev, projectId: qProject }));
     }
     if (!Number.isNaN(qIface) && qIface > 0) {
-      setSelectedIfaceId(qIface);
       void loadIfaceDetail(qIface);
     }
-    setBootstrappedQuery(true);
-  }, [bootstrappedQuery, projectsLoading, searchParams]);
+    bootstrappedQuery.current = true;
+  }, [projectsLoading, searchParams, loadIfaceDetail]);
 
   useEffect(() => {
     if (!projectId) {
@@ -114,47 +148,34 @@ export function YapiDebugPage() {
     };
   }, [projectId]);
 
-  async function loadIfaceDetail(id: number) {
-    try {
-      const raw = await getInterface(id);
-      const iface: IfaceItem = convertYapiData(
-        raw as Parameters<typeof convertYapiData>[0],
-        String(raw.catid ?? "debug"),
-        undefined,
-        {
-          custom: false,
-        },
-      );
-      setIfaceTitle(iface.title);
-      setDraft(buildDebugDraft(iface));
-      setResponse(null);
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "加载接口失败");
-    }
-  }
+  useEffect(() => {
+    setDraft((prev) => ({
+      ...prev,
+      headers: syncO5HeadersInDraft(prev.headers, debugAuth.session),
+    }));
+  }, [debugAuth.session]);
 
   const onSelectIface = (item: YapiListItem) => {
-    setSelectedIfaceId(item._id);
-    setIfaceTitle(item.title);
+    setSelection((prev) => ({ ...prev, ifaceId: item._id, title: item.title }));
     void loadIfaceDetail(item._id);
   };
 
   const onProjectChange = (id: number) => {
-    setProjectId(id);
-    setSelectedIfaceId(null);
-    setIfaceTitle("");
+    setSelection({ projectId: id, ifaceId: null, title: "" });
     setDraft(emptyDraft);
     setResponse(null);
     setError(null);
   };
 
-  const canSend = !!selectedIfaceId && !!debugAuth.session;
+  const canSend =
+    !!selectedIfaceId && !!debugAuth.session?.accessToken && !!debugAuth.session?.corpId;
   const sendHint = !selectedIfaceId
     ? "请先选择接口"
     : !debugAuth.session
       ? "请先登录 O5 账号后再发送"
-      : null;
+      : !debugAuth.session.corpId
+        ? "请选择企业（zxCorpId）"
+        : null;
 
   const onSend = async () => {
     if (!canSend || !debugAuth.session) return;
@@ -163,7 +184,7 @@ export function YapiDebugPage() {
     try {
       const env = getDebugEnv(envId);
       const url = composeRequestUrl(env.baseURL, draft.path, draft.query, project?.basepath);
-      const headers = mergeAuthHeader(draft.headers, debugAuth.session.accessToken);
+      const headers = mergeO5Headers(draft.headers, debugAuth.session);
       const method = draft.method;
       const body = method !== "GET" && draft.bodyText.trim() ? draft.bodyText : undefined;
       const res = await sendViaProxy({ url, method, headers, body });
@@ -206,11 +227,13 @@ export function YapiDebugPage() {
         onEnvChange={setEnvId}
         session={debugAuth.session}
         accounts={debugAuth.accounts}
+        selectedAccount={debugAuth.selectedAccount}
         loadingAccounts={debugAuth.loadingAccounts}
         accountsError={debugAuth.accountsError}
         loggingIn={debugAuth.loggingIn}
         loginError={debugAuth.loginError}
         onLogin={debugAuth.loginWithAccount}
+        onCorpChange={debugAuth.setCorp}
         onLogout={debugAuth.logout}
       />
 

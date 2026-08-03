@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 
 import { YapiAuthProvider, YapiRedirectIfAuthed, YapiRequireAuth } from "@/hooks/useYapiAuth";
+import { YapiAllProjectsBrowsePage } from "@/pages/yapi/YapiAllProjectsBrowsePage";
 import { YapiCollectionBrowsePage } from "@/pages/yapi/YapiCollectionBrowsePage";
 import { YapiDebugPage } from "@/pages/yapi/YapiDebugPage";
 import { YapiLoginPage } from "@/pages/yapi/YapiLoginPage";
@@ -40,7 +41,7 @@ export function YapiPage() {
             path="all"
             element={
               <YapiRequireAuth>
-                <YapiCollectionBrowsePage />
+                <YapiAllProjectsBrowsePage />
               </YapiRequireAuth>
             }
           />

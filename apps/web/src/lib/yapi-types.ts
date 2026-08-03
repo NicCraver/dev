@@ -58,6 +58,8 @@ export interface IfaceItem {
   note: string;
   custom?: boolean;
   yapiId?: number;
+  /** 所属 YApi 项目 id（跨项目「全部接口」用） */
+  projectId?: number;
   yapiUrl?: string;
   yapiApi?: string;
   synced?: boolean;
