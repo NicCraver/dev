@@ -1,15 +1,15 @@
-import { Building01Icon, Copy01Icon, StarIcon, Tick01Icon } from "@hugeicons/core-free-icons";
-import { useState, type MouseEvent } from "react";
+import { Building01Icon, StarIcon } from "@hugeicons/core-free-icons";
+import { type MouseEvent } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
-import { copyPhone } from "@/lib/copy-phone";
 import { openAccountJump } from "@/lib/account-jump";
 import { iconGhostClasses } from "@/lib/interaction";
 import { cn } from "@/lib/utils";
 import { accountPhone, type O5Account } from "@/types/o5-env";
 
 import { HighlightText, accountCardClassName } from "./account-card-utils";
+import { CopyPhoneButton } from "./CopyPhoneButton";
 
 type AccountCardProps = {
   account: O5Account;
@@ -36,7 +36,6 @@ export function AccountCard({
   isDragging = false,
   onToggleFavorite,
 }: AccountCardProps) {
-  const [copied, setCopied] = useState(false);
   const corps = account.corpList;
   const onlyOneCorp = corps.length === 1;
   const isBlockJump = jumpEnabled && onlyOneCorp;
@@ -58,13 +57,7 @@ export function AccountCard({
     handleJump(corps[0].corpId, event);
   };
 
-  const handleCopy = async (event: MouseEvent) => {
-    event.stopPropagation();
-    const ok = await copyPhone(accountPhone(account));
-    if (!ok) return;
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1500);
-  };
+  const phone = accountPhone(account);
 
   return (
     <article
@@ -94,6 +87,7 @@ export function AccountCard({
             variant="ghost"
             size="sm"
             className={cn("h-8 w-8 p-0", iconGhostClasses(isFavorite ? "amber" : "neutral"))}
+            title={isFavorite ? "取消收藏" : "收藏"}
             aria-label={isFavorite ? `取消收藏 ${account.name}` : `收藏 ${account.name}`}
             aria-pressed={isFavorite}
             onClick={(event) => {
@@ -106,34 +100,7 @@ export function AccountCard({
               className={cn("size-3.5", isFavorite && "fill-current scale-110")}
             />
           </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            disabled={copied}
-            className={cn(
-              "h-8 shrink-0 gap-1.5 px-2.5 font-medium text-xs",
-              copied
-                ? "cursor-default bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400 border border-emerald-500/20 shadow-2xs opacity-100 active:scale-100"
-                : iconGhostClasses("primary"),
-            )}
-            onClick={(event) => void handleCopy(event)}
-          >
-            {copied ? (
-              <>
-                <Icon
-                  icon={Tick01Icon}
-                  className="size-3.5 animate-in fade-in zoom-in duration-200"
-                />
-                已复制
-              </>
-            ) : (
-              <>
-                <Icon icon={Copy01Icon} className="size-3.5" />
-                复制
-              </>
-            )}
-          </Button>
+          <CopyPhoneButton phone={phone} accountName={account.name} variant="labeled" />
         </div>
       </div>
 

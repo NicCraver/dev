@@ -1,14 +1,14 @@
-import { Copy01Icon, StarIcon, Tick01Icon } from "@hugeicons/core-free-icons";
-import { useState, type KeyboardEvent, type MouseEvent } from "react";
+import { StarIcon } from "@hugeicons/core-free-icons";
+import { type KeyboardEvent, type MouseEvent } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { openAccountJump } from "@/lib/account-jump";
-import { copyPhone } from "@/lib/copy-phone";
 import { favoriteChipClasses, favoriteChipIconClasses, focusRing } from "@/lib/interaction";
 import { accountOrgLabel, accountPhone, type O5Account } from "@/types/o5-env";
 import { cn } from "@/lib/utils";
 
+import { CopyPhoneButton } from "./CopyPhoneButton";
 import { o5SectionHeaderClasses, o5SectionHeaderHintClasses } from "./o5-section-header";
 import { SortableFavoritesRow, type FavoriteSortableProps } from "./SortableFavoritesRow";
 
@@ -88,8 +88,8 @@ export function FavoriteChip({
   sortable: FavoriteSortableProps | null;
   onToggleFavorite: (accountId: string) => void;
 }) {
-  const [copied, setCopied] = useState(false);
   const defaultCorp = account.corpList[0];
+  const phone = accountPhone(account);
 
   const handleOpen = (event: MouseEvent | KeyboardEvent) => {
     if (sortable?.isDragging || !jumpEnabled || !defaultCorp) return;
@@ -102,14 +102,6 @@ export function FavoriteChip({
       features: windowFeatures,
       ctrlKey,
     });
-  };
-
-  const handleCopy = async (event: MouseEvent) => {
-    event.stopPropagation();
-    const ok = await copyPhone(accountPhone(account));
-    if (!ok) return;
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1500);
   };
 
   const handleToggleFavorite = (event: MouseEvent) => {
@@ -166,26 +158,7 @@ export function FavoriteChip({
       </button>
       {!sortable?.anyDragging && (
         <div className="flex shrink-0 items-center pr-0.5">
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            disabled={copied}
-            className={cn(
-              "size-6 shrink-0 rounded-full p-0",
-              favoriteChipIconClasses(copied ? "copied" : "copy"),
-            )}
-            aria-label={
-              copied ? `已复制 ${account.name} 的手机号` : `复制 ${account.name} 的手机号`
-            }
-            onClick={(event) => void handleCopy(event)}
-          >
-            {copied ? (
-              <Icon icon={Tick01Icon} className="size-3 animate-in fade-in zoom-in duration-200" />
-            ) : (
-              <Icon icon={Copy01Icon} className="size-3" />
-            )}
-          </Button>
+          <CopyPhoneButton phone={phone} accountName={account.name} variant="icon" />
           <Button
             type="button"
             variant="ghost"
