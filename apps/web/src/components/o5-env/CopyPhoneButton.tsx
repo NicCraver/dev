@@ -1,4 +1,5 @@
-import { Copy01Icon, Tick01Icon } from "@hugeicons/core-free-icons";
+import { Copy01Icon, Link01Icon, Tick01Icon } from "@hugeicons/core-free-icons";
+import { type IconSvgElement } from "@hugeicons/react";
 import { useEffect, useLayoutEffect, useRef, useState, type MouseEvent } from "react";
 import { createPortal } from "react-dom";
 
@@ -10,23 +11,22 @@ import { cn } from "@/lib/utils";
 
 const HOVER_DELAY_MS = 500;
 
-type CopyPhoneButtonProps = {
-  phone: string;
-  accountName: string;
+type CopyValueButtonProps = {
+  /** 要复制到剪贴板的内容 */
+  value: string;
+  /** 悬停气泡里预览的文本 */
+  preview: string;
+  /** 所属账号名，用于无障碍标签 */
+  subject: string;
+  /** 复制内容的类型名，如「手机号」「地址」 */
+  kind: string;
   variant: "labeled" | "icon";
+  defaultIcon: IconSvgElement;
 };
 
 type BubblePos = { left: number; top: number };
 
-function PhoneBubble({
-  phone,
-  compact,
-  pos,
-}: {
-  phone: string;
-  compact?: boolean;
-  pos: BubblePos;
-}) {
+function ValueBubble({ text, compact, pos }: { text: string; compact?: boolean; pos: BubblePos }) {
   return createPortal(
     <div
       className={cn(
@@ -39,12 +39,14 @@ function PhoneBubble({
       <div
         className={cn(
           "rounded-xl border border-[#b8c8f0] bg-[#eef2fb] text-slate-700 shadow-sm",
-          "font-mono font-semibold tabular-nums tracking-wide whitespace-nowrap",
+          "font-mono font-semibold tabular-nums tracking-wide",
           "dark:border-primary/40 dark:bg-primary/15 dark:text-zinc-100",
+          "max-w-[320px] truncate",
           compact ? "px-2.5 py-1 text-xs" : "px-3.5 py-1.5 text-sm",
         )}
+        title={text}
       >
-        {phone}
+        {text}
       </div>
       <div
         className={cn(
@@ -57,9 +59,16 @@ function PhoneBubble({
   );
 }
 
-export function CopyPhoneButton({ phone, accountName, variant }: CopyPhoneButtonProps) {
+function CopyValueButton({
+  value,
+  preview,
+  subject,
+  kind,
+  variant,
+  defaultIcon,
+}: CopyValueButtonProps) {
   const [copied, setCopied] = useState(false);
-  const [showPhone, setShowPhone] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
   const [bubblePos, setBubblePos] = useState<BubblePos | null>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const hoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -85,7 +94,7 @@ export function CopyPhoneButton({ phone, accountName, variant }: CopyPhoneButton
   useEffect(() => () => clearHoverTimer(), []);
 
   useLayoutEffect(() => {
-    if (!showPhone || copied) {
+    if (!showPreview || copied) {
       setBubblePos(null);
       return;
     }
@@ -97,30 +106,31 @@ export function CopyPhoneButton({ phone, accountName, variant }: CopyPhoneButton
       window.removeEventListener("scroll", onScrollOrResize, true);
       window.removeEventListener("resize", onScrollOrResize);
     };
-  }, [showPhone, copied, variant]);
+  }, [showPreview, copied, variant]);
 
   const handleMouseEnter = () => {
     if (copied) return;
     clearHoverTimer();
-    hoverTimerRef.current = setTimeout(() => setShowPhone(true), HOVER_DELAY_MS);
+    hoverTimerRef.current = setTimeout(() => setShowPreview(true), HOVER_DELAY_MS);
   };
 
   const handleMouseLeave = () => {
     clearHoverTimer();
-    setShowPhone(false);
+    setShowPreview(false);
   };
 
   const handleCopy = async (event: MouseEvent) => {
     event.stopPropagation();
-    const ok = await copyPhone(phone);
+    const ok = await copyPhone(value);
     if (!ok) return;
     clearHoverTimer();
-    setShowPhone(false);
+    setShowPreview(false);
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1500);
   };
 
-  const previewActive = showPhone && !copied && bubblePos;
+  const previewActive = showPreview && !copied && bubblePos;
+  const ariaLabel = copied ? `已复制 ${subject} 的${kind}` : `复制 ${subject} 的${kind}`;
 
   if (variant === "labeled") {
     return (
@@ -130,7 +140,7 @@ export function CopyPhoneButton({ phone, accountName, variant }: CopyPhoneButton
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
-        {previewActive && <PhoneBubble phone={phone} pos={bubblePos} />}
+        {previewActive && <ValueBubble text={preview} pos={bubblePos} />}
         <Button
           type="button"
           variant="ghost"
@@ -142,7 +152,7 @@ export function CopyPhoneButton({ phone, accountName, variant }: CopyPhoneButton
               ? "cursor-default border border-emerald-500/20 bg-emerald-500/10 text-emerald-600 opacity-100 shadow-2xs active:scale-100 dark:bg-emerald-500/15 dark:text-emerald-400"
               : iconGhostClasses("primary"),
           )}
-          aria-label={copied ? `已复制 ${accountName} 的手机号` : `复制 ${accountName} 的手机号`}
+          aria-label={ariaLabel}
           onClick={(event) => void handleCopy(event)}
         >
           {copied ? (
@@ -155,7 +165,7 @@ export function CopyPhoneButton({ phone, accountName, variant }: CopyPhoneButton
             </>
           ) : (
             <>
-              <Icon icon={Copy01Icon} className="size-3.5" />
+              <Icon icon={defaultIcon} className="size-3.5" />
               复制
             </>
           )}
@@ -171,7 +181,7 @@ export function CopyPhoneButton({ phone, accountName, variant }: CopyPhoneButton
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      {previewActive && <PhoneBubble phone={phone} compact pos={bubblePos} />}
+      {previewActive && <ValueBubble text={preview} compact pos={bubblePos} />}
       <Button
         type="button"
         variant="ghost"
@@ -181,15 +191,53 @@ export function CopyPhoneButton({ phone, accountName, variant }: CopyPhoneButton
           "size-6 shrink-0 rounded-full p-0 transition-all duration-200",
           copied ? favoriteChipIconClasses("copied") : favoriteChipIconClasses("copy"),
         )}
-        aria-label={copied ? `已复制 ${accountName} 的手机号` : `复制 ${accountName} 的手机号`}
+        aria-label={ariaLabel}
         onClick={(event) => void handleCopy(event)}
       >
         {copied ? (
           <Icon icon={Tick01Icon} className="size-3 animate-in fade-in zoom-in duration-200" />
         ) : (
-          <Icon icon={Copy01Icon} className="size-3" />
+          <Icon icon={defaultIcon} className="size-3" />
         )}
       </Button>
     </div>
+  );
+}
+
+type CopyPhoneButtonProps = {
+  phone: string;
+  accountName: string;
+  variant: "labeled" | "icon";
+};
+
+export function CopyPhoneButton({ phone, accountName, variant }: CopyPhoneButtonProps) {
+  return (
+    <CopyValueButton
+      value={phone}
+      preview={phone}
+      subject={accountName}
+      kind="手机号"
+      variant={variant}
+      defaultIcon={Copy01Icon}
+    />
+  );
+}
+
+type CopyAddressButtonProps = {
+  url: string;
+  accountName: string;
+  variant?: "labeled" | "icon";
+};
+
+export function CopyAddressButton({ url, accountName, variant = "icon" }: CopyAddressButtonProps) {
+  return (
+    <CopyValueButton
+      value={url}
+      preview={url}
+      subject={accountName}
+      kind="地址"
+      variant={variant}
+      defaultIcon={Link01Icon}
+    />
   );
 }

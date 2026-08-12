@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import { accountPhone, type O5Account } from "@/types/o5-env";
 
 import { HighlightText, accountCardClassName } from "./account-card-utils";
-import { CopyPhoneButton } from "./CopyPhoneButton";
+import { CopyAddressButton, CopyPhoneButton } from "./CopyPhoneButton";
 
 type AccountCardProps = {
   account: O5Account;
@@ -101,6 +101,9 @@ export function AccountCard({
             />
           </Button>
           <CopyPhoneButton phone={phone} accountName={account.name} variant="labeled" />
+          {jumpEnabled && targetUrl && (
+            <CopyAddressButton url={targetUrl} accountName={account.name} />
+          )}
         </div>
       </div>
 
