@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Vite+ hook shim：push 后自动部署（委托 .githooks/post-push）
+ROOT="$(git rev-parse --show-toplevel)"
+exec bash "$ROOT/.githooks/post-push" "$@"
