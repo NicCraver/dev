@@ -100,7 +100,6 @@ export function AccountCard({
               className={cn("size-3.5", isFavorite && "fill-current scale-110")}
             />
           </Button>
-          <CopyPhoneButton phone={phone} accountName={account.name} variant="labeled" />
           {jumpEnabled && targetUrl && corps[0] && (
             <CopyAddressButton
               jumpRequest={{
@@ -112,6 +111,7 @@ export function AccountCard({
               accountName={account.name}
             />
           )}
+          <CopyPhoneButton phone={phone} accountName={account.name} variant="labeled" />
         </div>
       </div>
 

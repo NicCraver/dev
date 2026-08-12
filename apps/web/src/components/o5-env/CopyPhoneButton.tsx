@@ -1,4 +1,4 @@
-import { Copy01Icon, LinkSquare02Icon, Tick01Icon } from "@hugeicons/core-free-icons";
+import { Copy01Icon, CopyLinkIcon, Tick01Icon } from "@hugeicons/core-free-icons";
 import { type IconSvgElement } from "@hugeicons/react";
 import { useEffect, useLayoutEffect, useRef, useState, type MouseEvent } from "react";
 import { createPortal } from "react-dom";
@@ -193,14 +193,16 @@ function CopyValueButton({
   }
 
   const isChip = variant === "icon";
+  const copiedClasses = cn(
+    "cursor-default",
+    isChip
+      ? favoriteChipIconClasses("copied")
+      : "border border-emerald-500/20 bg-emerald-500/10 text-emerald-600 shadow-2xs active:scale-100 dark:bg-emerald-500/15 dark:text-emerald-400",
+  );
   const buttonClassName = cn(
     isChip ? "size-6 shrink-0 rounded-full p-0" : "h-8 w-8 shrink-0 rounded-lg p-0",
     "transition-all duration-200",
-    copied
-      ? favoriteChipIconClasses("copied")
-      : isChip
-        ? favoriteChipIconClasses("copy")
-        : iconGhostClasses("primary"),
+    copied ? copiedClasses : isChip ? favoriteChipIconClasses("copy") : iconGhostClasses("primary"),
   );
 
   return (
@@ -267,7 +269,7 @@ export function CopyAddressButton({
       subject={accountName}
       kind="地址"
       variant={variant}
-      defaultIcon={LinkSquare02Icon}
+      defaultIcon={CopyLinkIcon}
     />
   );
 }
