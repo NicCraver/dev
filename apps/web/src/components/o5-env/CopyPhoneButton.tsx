@@ -1,4 +1,4 @@
-import { Copy01Icon, Link01Icon, Tick01Icon } from "@hugeicons/core-free-icons";
+import { Copy01Icon, LinkSquare02Icon, Tick01Icon } from "@hugeicons/core-free-icons";
 import { type IconSvgElement } from "@hugeicons/react";
 import { useEffect, useLayoutEffect, useRef, useState, type MouseEvent } from "react";
 import { createPortal } from "react-dom";
@@ -8,19 +8,23 @@ import { Icon } from "@/components/ui/icon";
 import { copyPhone } from "@/lib/copy-phone";
 import { favoriteChipIconClasses, iconGhostClasses } from "@/lib/interaction";
 import { cn } from "@/lib/utils";
+import type { AccountJumpRequest } from "@mt-dev/shared";
+import { buildAccountJumpUrl } from "@/lib/account-jump";
 
 const HOVER_DELAY_MS = 500;
 
 type CopyValueButtonProps = {
-  /** 要复制到剪贴板的内容 */
-  value: string;
   /** 悬停气泡里预览的文本 */
   preview: string;
+  /** 要复制到剪贴板的内容；提供 getValue 时以异步结果为准 */
+  value?: string;
+  /** 异步取复制内容（如登录后拼接的跳转地址） */
+  getValue?: () => Promise<string>;
   /** 所属账号名，用于无障碍标签 */
   subject: string;
   /** 复制内容的类型名，如「手机号」「地址」 */
   kind: string;
-  variant: "labeled" | "icon";
+  variant: "labeled" | "icon" | "card";
   defaultIcon: IconSvgElement;
 };
 
@@ -60,14 +64,16 @@ function ValueBubble({ text, compact, pos }: { text: string; compact?: boolean; 
 }
 
 function CopyValueButton({
-  value,
   preview,
+  value,
+  getValue,
   subject,
   kind,
   variant,
   defaultIcon,
 }: CopyValueButtonProps) {
   const [copied, setCopied] = useState(false);
+  const [copying, setCopying] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [bubblePos, setBubblePos] = useState<BubblePos | null>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -109,7 +115,7 @@ function CopyValueButton({
   }, [showPreview, copied, variant]);
 
   const handleMouseEnter = () => {
-    if (copied) return;
+    if (copied || copying) return;
     clearHoverTimer();
     hoverTimerRef.current = setTimeout(() => setShowPreview(true), HOVER_DELAY_MS);
   };
@@ -121,12 +127,24 @@ function CopyValueButton({
 
   const handleCopy = async (event: MouseEvent) => {
     event.stopPropagation();
-    const ok = await copyPhone(value);
-    if (!ok) return;
+    if (copying) return;
     clearHoverTimer();
     setShowPreview(false);
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1500);
+    setCopying(true);
+    try {
+      const text = getValue ? await getValue() : value;
+      if (!text) return;
+      const ok = await copyPhone(text);
+      if (!ok) return;
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1500);
+    } catch (error) {
+      console.error(`复制${kind}失败:`, error);
+      const message = error instanceof Error ? error.message : `复制${kind}失败，请重试`;
+      alert(message);
+    } finally {
+      setCopying(false);
+    }
   };
 
   const previewActive = showPreview && !copied && bubblePos;
@@ -145,7 +163,7 @@ function CopyValueButton({
           type="button"
           variant="ghost"
           size="sm"
-          disabled={copied}
+          disabled={copied || copying}
           className={cn(
             "h-8 shrink-0 gap-1.5 px-2.5 font-medium text-xs transition-all duration-200",
             copied
@@ -174,6 +192,17 @@ function CopyValueButton({
     );
   }
 
+  const isChip = variant === "icon";
+  const buttonClassName = cn(
+    isChip ? "size-6 shrink-0 rounded-full p-0" : "h-8 w-8 shrink-0 rounded-lg p-0",
+    "transition-all duration-200",
+    copied
+      ? favoriteChipIconClasses("copied")
+      : isChip
+        ? favoriteChipIconClasses("copy")
+        : iconGhostClasses("primary"),
+  );
+
   return (
     <div
       ref={wrapRef}
@@ -186,11 +215,8 @@ function CopyValueButton({
         type="button"
         variant="ghost"
         size="sm"
-        disabled={copied}
-        className={cn(
-          "size-6 shrink-0 rounded-full p-0 transition-all duration-200",
-          copied ? favoriteChipIconClasses("copied") : favoriteChipIconClasses("copy"),
-        )}
+        disabled={copied || copying}
+        className={buttonClassName}
         aria-label={ariaLabel}
         onClick={(event) => void handleCopy(event)}
       >
@@ -224,20 +250,24 @@ export function CopyPhoneButton({ phone, accountName, variant }: CopyPhoneButton
 }
 
 type CopyAddressButtonProps = {
-  url: string;
+  jumpRequest: AccountJumpRequest;
   accountName: string;
-  variant?: "labeled" | "icon";
+  variant?: "labeled" | "icon" | "card";
 };
 
-export function CopyAddressButton({ url, accountName, variant = "icon" }: CopyAddressButtonProps) {
+export function CopyAddressButton({
+  jumpRequest,
+  accountName,
+  variant = "card",
+}: CopyAddressButtonProps) {
   return (
     <CopyValueButton
-      value={url}
-      preview={url}
+      preview={jumpRequest.targetUrl}
+      getValue={() => buildAccountJumpUrl(jumpRequest)}
       subject={accountName}
       kind="地址"
       variant={variant}
-      defaultIcon={Link01Icon}
+      defaultIcon={LinkSquare02Icon}
     />
   );
 }

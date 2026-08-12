@@ -22,6 +22,12 @@ export function resolveWindowName(
   return `page-${corpId}-${username}-${targetUrl.replace(/[:/]/g, "_")}`;
 }
 
+export async function buildAccountJumpUrl(payload: AccountJumpRequest): Promise<string> {
+  const token = await loginApp(payload.username, payload.password);
+  const code = await fetchAuthCode(token.access_token);
+  return buildJumpUrl(payload.targetUrl, code, payload.corpId);
+}
+
 export async function openAccountJump(payload: AccountJumpRequest): Promise<void> {
   if (!payload.targetUrl?.trim()) {
     alert("请先选择一个环境");
@@ -29,9 +35,7 @@ export async function openAccountJump(payload: AccountJumpRequest): Promise<void
   }
 
   try {
-    const token = await loginApp(payload.username, payload.password);
-    const code = await fetchAuthCode(token.access_token);
-    const url = buildJumpUrl(payload.targetUrl, code, payload.corpId);
+    const url = await buildAccountJumpUrl(payload);
     const windowName = resolveWindowName(
       !!payload.ctrlKey,
       payload.corpId,

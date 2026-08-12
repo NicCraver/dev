@@ -101,8 +101,16 @@ export function AccountCard({
             />
           </Button>
           <CopyPhoneButton phone={phone} accountName={account.name} variant="labeled" />
-          {jumpEnabled && targetUrl && (
-            <CopyAddressButton url={targetUrl} accountName={account.name} />
+          {jumpEnabled && targetUrl && corps[0] && (
+            <CopyAddressButton
+              jumpRequest={{
+                username: account.username,
+                password: account.password,
+                corpId: corps[0].corpId,
+                targetUrl,
+              }}
+              accountName={account.name}
+            />
           )}
         </div>
       </div>
